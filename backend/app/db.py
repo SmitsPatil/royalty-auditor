@@ -7,6 +7,10 @@ from typing import Generator
 # Vercel provides POSTGRES_URL, others often use DATABASE_URL
 SQLALCHEMY_DATABASE_URL = os.getenv("POSTGRES_URL", os.getenv("DATABASE_URL", "sqlite:///./lrac.db"))
 
+# SQLAlchemy requires postgresql:// instead of postgres:// (which Vercel/Heroku often provide)
+if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # Adjust connect_args for SQLite (needed for multi-threading)
 connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
 
