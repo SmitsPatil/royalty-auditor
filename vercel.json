@@ -1,26 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": { 
-        "distDir": "dist"
-      }
+  "functions": {
+    "api/index.py": {
+      "runtime": "vercel-python@0.6.0"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/(.*)",
       "dest": "/api/index.py"
-    },
-    {
-      "src": "/health.html",
-      "dest": "/health.html"
     },
     {
       "handle": "filesystem"
