@@ -1,0 +1,19 @@
+{
+    "agents": [
+        "PlannerAgent",
+        "ContractReaderAgent",
+        "UsageAgent",
+        "RoyaltyAgent",
+        "LedgerAgent",
+        "AuditAgent",
+        "ViolationAgent",
+        "ReporterAgent"
+    ],
+    "version": "1.0.0",
+    "demo_mode": true,
+    "features_enabled": [
+        "agentic_workflows",
+        "royalty_leakage",
+        "contract_ai"
+    ]
+}

@@ -1,0 +1,352 @@
+DIGITAL LICENSE EXPORT
+========================================
+Contract ID: C1
+Content: Series_265
+Studio: StudioC
+Rate: $0.0146 per play
+Territory: DE
+Valid from 2024-10-25 to 2026-07-22
+----------------------------------------
+Contract ID: C2
+Content: Series_141
+Studio: StudioB
+Rate: $0.037 per play
+Territory: CA
+Valid from 2024-08-22 to 2025-11-12
+----------------------------------------
+Contract ID: C3
+Content: Podcast_345
+Studio: StudioD
+Rate: $0.0194 per play
+Territory: AU
+Valid from 2024-11-13 to 2025-11-09
+----------------------------------------
+Contract ID: C4
+Content: Series_170
+Studio: StudioB
+Rate: $0.0275 per play
+Territory: US
+Valid from 2023-11-22 to 2026-02-16
+----------------------------------------
+Contract ID: C5
+Content: Audiobook_259
+Studio: StudioA
+Rate: $0.0485 per play
+Territory: FR
+Valid from 2023-10-10 to 2026-05-08
+----------------------------------------
+Contract ID: C6
+Content: Movie_182
+Studio: StudioC
+Rate: $0.0113 per play
+Territory: CA
+Valid from 2024-12-08 to 2026-01-15
+----------------------------------------
+Contract ID: C7
+Content: Audiobook_448
+Studio: StudioD
+Rate: $0.0187 per play
+Territory: CA
+Valid from 2024-12-03 to 2026-04-21
+----------------------------------------
+Contract ID: C8
+Content: Audiobook_364
+Studio: StudioD
+Rate: $0.013 per play
+Territory: DE
+Valid from 2024-05-17 to 2025-09-03
+----------------------------------------
+Contract ID: C9
+Content: Series_359
+Studio: StudioB
+Rate: $0.0338 per play
+Territory: IN
+Valid from 2024-02-17 to 2026-03-15
+----------------------------------------
+Contract ID: C10
+Content: Audiobook_441
+Studio: StudioA
+Rate: $0.0169 per play
+Territory: AU
+Valid from 2023-03-21 to 2025-10-05
+----------------------------------------
+Contract ID: C11
+Content: Audiobook_395
+Studio: StudioD
+Rate: $0.04 per play
+Territory: US
+Valid from 2023-02-04 to 2026-01-07
+----------------------------------------
+Contract ID: C12
+Content: Series_385
+Studio: StudioD
+Rate: $0.016 per play
+Territory: IN
+Valid from 2024-10-08 to 2026-10-21
+----------------------------------------
+Contract ID: C13
+Content: Series_398
+Studio: StudioA
+Rate: $0.0159 per play
+Territory: JP
+Valid from 2023-07-28 to 2026-07-20
+----------------------------------------
+Contract ID: C14
+Content: Podcast_175
+Studio: StudioA
+Rate: $0.0396 per play
+Territory: DE
+Valid from 2023-04-09 to 2026-10-18
+----------------------------------------
+Contract ID: C15
+Content: Audiobook_356
+Studio: StudioC
+Rate: $0.0226 per play
+Territory: JP
+Valid from 2023-01-02 to 2025-06-24
+----------------------------------------
+Contract ID: C16
+Content: Podcast_144
+Studio: StudioC
+Rate: $0.0364 per play
+Territory: FR
+Valid from 2024-07-14 to 2025-09-17
+----------------------------------------
+Contract ID: C17
+Content: Series_465
+Studio: StudioB
+Rate: $0.0348 per play
+Territory: CA
+Valid from 2024-07-31 to 2025-08-10
+----------------------------------------
+Contract ID: C18
+Content: Podcast_217
+Studio: StudioA
+Rate: $0.0127 per play
+Territory: DE
+Valid from 2024-06-16 to 2026-12-08
+----------------------------------------
+Contract ID: C19
+Content: Series_405
+Studio: StudioC
+Rate: $0.0408 per play
+Territory: BR
+Valid from 2023-02-23 to 2026-09-04
+----------------------------------------
+Contract ID: C20
+Content: Movie_245
+Studio: StudioA
+Rate: $0.045 per play
+Territory: AU
+Valid from 2024-08-24 to 2025-12-25
+----------------------------------------
+Contract ID: C21
+Content: Series_467
+Studio: StudioD
+Rate: $0.0178 per play
+Territory: US
+Valid from 2023-07-23 to 2026-10-19
+----------------------------------------
+Contract ID: C22
+Content: Movie_206
+Studio: StudioB
+Rate: $0.0102 per play
+Territory: AU
+Valid from 2023-06-06 to 2025-12-17
+----------------------------------------
+Contract ID: C23
+Content: Song_132
+Studio: StudioA
+Rate: $0.0239 per play
+Territory: DE
+Valid from 2023-08-01 to 2025-08-29
+----------------------------------------
+Contract ID: C24
+Content: Podcast_463
+Studio: StudioB
+Rate: $0.0253 per play
+Territory: DE
+Valid from 2024-05-26 to 2026-03-23
+----------------------------------------
+Contract ID: C25
+Content: Audiobook_308
+Studio: StudioA
+Rate: $0.0211 per play
+Territory: BR
+Valid from 2024-03-11 to 2025-08-23
+----------------------------------------
+Contract ID: C26
+Content: Podcast_200
+Studio: StudioB
+Rate: $0.0116 per play
+Territory: UK
+Valid from 2024-10-20 to 2026-06-02
+----------------------------------------
+Contract ID: C27
+Content: Series_485
+Studio: StudioA
+Rate: $0.0365 per play
+Territory: UK
+Valid from 2024-01-30 to 2025-10-23
+----------------------------------------
+Contract ID: C28
+Content: Movie_113
+Studio: StudioB
+Rate: $0.0186 per play
+Territory: US
+Valid from 2023-01-20 to 2026-05-24
+----------------------------------------
+Contract ID: C29
+Content: Series_288
+Studio: StudioD
+Rate: $0.0313 per play
+Territory: AU
+Valid from 2023-12-03 to 2025-12-11
+----------------------------------------
+Contract ID: C30
+Content: Series_264
+Studio: StudioC
+Rate: $0.0456 per play
+Territory: UK
+Valid from 2023-12-24 to 2025-08-09
+----------------------------------------
+Contract ID: C31
+Content: Series_392
+Studio: StudioB
+Rate: $0.0486 per play
+Territory: UK
+Valid from 2024-04-04 to 2025-12-04
+----------------------------------------
+Contract ID: C32
+Content: Movie_122
+Studio: StudioB
+Rate: $0.0203 per play
+Territory: US
+Valid from 2023-03-19 to 2026-01-24
+----------------------------------------
+Contract ID: C33
+Content: Podcast_348
+Studio: StudioC
+Rate: $0.0323 per play
+Territory: US
+Valid from 2023-07-18 to 2025-12-19
+----------------------------------------
+Contract ID: C34
+Content: Song_481
+Studio: StudioD
+Rate: $0.042 per play
+Territory: BR
+Valid from 2024-07-08 to 2026-03-04
+----------------------------------------
+Contract ID: C35
+Content: Movie_286
+Studio: StudioD
+Rate: $0.0479 per play
+Territory: CA
+Valid from 2023-08-13 to 2026-10-28
+----------------------------------------
+Contract ID: C36
+Content: Song_423
+Studio: StudioB
+Rate: $0.0485 per play
+Territory: US
+Valid from 2024-03-05 to 2026-06-03
+----------------------------------------
+Contract ID: C37
+Content: Audiobook_491
+Studio: StudioB
+Rate: $0.0134 per play
+Territory: UK
+Valid from 2024-08-25 to 2026-04-14
+----------------------------------------
+Contract ID: C38
+Content: Song_341
+Studio: StudioD
+Rate: $0.0235 per play
+Territory: IN
+Valid from 2023-01-01 to 2025-06-02
+----------------------------------------
+Contract ID: C39
+Content: Song_367
+Studio: StudioD
+Rate: $0.0321 per play
+Territory: JP
+Valid from 2023-02-23 to 2025-12-29
+----------------------------------------
+Contract ID: C40
+Content: Audiobook_260
+Studio: StudioC
+Rate: $0.0222 per play
+Territory: JP
+Valid from 2024-10-18 to 2026-05-27
+----------------------------------------
+Contract ID: C41
+Content: Movie_178
+Studio: StudioD
+Rate: $0.0117 per play
+Territory: AU
+Valid from 2023-09-21 to 2026-09-20
+----------------------------------------
+Contract ID: C42
+Content: Podcast_480
+Studio: StudioD
+Rate: $0.0463 per play
+Territory: US
+Valid from 2023-07-20 to 2026-12-17
+----------------------------------------
+Contract ID: C43
+Content: Podcast_148
+Studio: StudioC
+Rate: $0.0226 per play
+Territory: AU
+Valid from 2024-01-29 to 2025-09-05
+----------------------------------------
+Contract ID: C44
+Content: Series_476
+Studio: StudioC
+Rate: $0.0157 per play
+Territory: CA
+Valid from 2024-05-10 to 2026-12-12
+----------------------------------------
+Contract ID: C45
+Content: Audiobook_354
+Studio: StudioB
+Rate: $0.0169 per play
+Territory: BR
+Valid from 2023-02-08 to 2026-03-26
+----------------------------------------
+Contract ID: C46
+Content: Movie_496
+Studio: StudioB
+Rate: $0.0465 per play
+Territory: CA
+Valid from 2024-03-25 to 2025-07-03
+----------------------------------------
+Contract ID: C47
+Content: Series_348
+Studio: StudioB
+Rate: $0.0373 per play
+Territory: US
+Valid from 2023-06-20 to 2026-12-04
+----------------------------------------
+Contract ID: C48
+Content: Audiobook_305
+Studio: StudioA
+Rate: $0.0499 per play
+Territory: AU
+Valid from 2024-02-18 to 2026-04-23
+----------------------------------------
+Contract ID: C49
+Content: Podcast_200
+Studio: StudioD
+Rate: $0.0149 per play
+Territory: IN
+Valid from 2023-08-01 to 2025-10-06
+----------------------------------------
+Contract ID: C50
+Content: Movie_366
+Studio: StudioA
+Rate: $0.0316 per play
+Territory: FR
+Valid from 2024-11-23 to 2027-01-01
+----------------------------------------

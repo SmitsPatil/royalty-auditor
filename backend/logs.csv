@@ -1,0 +1,3 @@
+play_id,content_id,timestamp,country,plays,user_type,device
+P1,Movie_1,2025-01-01,US,1000,premium,mobile
+P2,Movie_1,2025-01-02,IN,500,free,web

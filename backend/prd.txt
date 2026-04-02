@@ -1,0 +1,290 @@
+Agentic Contract Intelligence & Royalty Leakage Detection 
+
+1. Overview
+The Digital License Royalty Auditor is an AI-powered demo platform that simulates how streaming platforms, media companies, and tech providers can automatically audit royalties by comparing:
+Licensing contracts (long legal text)
+Streaming usage logs
+Payment ledgers
+The system uses agentic workflows + contract parsing + rule evaluation + audit engine to detect:
+Underpaid royalties
+Overpayments
+Contract violations
+Expired licenses
+Incorrect rate tiers
+Territory violations
+The demo shows how AI can prevent $50K+ billing leakage automatically.
+This demo is designed for:
+Streaming platforms
+Media companies
+SaaS billing platforms
+FinTech / RevOps
+Contract intelligence vendors
+Consulting demos
+Enterprise AI demos
+2. Goals
+Primary Goal
+Demonstrate an agentic contract auditing system that reads 1000 contracts and finds royalty errors automatically.
+Secondary Goals
+Show LLM contract parsing
+Show multi-agent workflow
+Show financial audit automation
+Show anomaly detection
+Show explainable audit trail
+Show regulator-ready logs
+3. Demo Narrative
+"Streaming platforms process millions of plays daily. Each play must follow contract terms. Contracts are 500 pages long. Humans cannot audit this manually.
+The Digital License Auditor reads contracts, compares logs, and flags royalty leakage automatically."
+4. Core Features
+4.1 Contract Reader Agent
+Reads synthetic contracts:
+Extracts:
+Content ID
+Artist / studio
+Royalty %
+Rate per play
+Territory rules
+Start date
+End date
+Tier pricing
+Minimum guarantees
+Example output:
+Contract ID: C102
+Content: Movie_442
+Royalty: 12%
+Territory: US, CA
+Rate per play: 0.03
+Valid until: 2026-12-31
+
+4.2 Streaming Log Analyzer
+Input:
+play_id
+content_id
+country
+timestamp
+user_type
+device
+plays
+Output:
+Total plays per content
+Example:
+Movie_442 → 120,000 plays
+
+4.3 Royalty Calculator Agent
+Uses:
+Contract rules × streaming logs × payment ledger
+Calculates:
+Expected royalty
+Example:
+120,000 × 0.03 = 3600
+Compare with ledger:
+Paid = 3100
+Leakage = 500
+
+4.4 Leakage Detector
+Flags:
+Underpayment
+Overpayment
+Missing payment
+Expired contract usage
+Territory violation
+Wrong rate tier
+Example:
+Alert: UNDERPAYMENT
+Content: Movie_442
+Expected: 3600
+Paid: 3100
+Difference: 500
+
+4.5 Contract Violation Checker
+Detect:
+Plays outside contract dates
+Plays outside territory
+Tier threshold errors
+Missing license
+Example:
+Violation:
+Content used after expiry
+4.6 Audit Log Generator
+Every audit saved:
+audit_id
+contract_id
+content_id
+expected_payment
+actual_payment
+difference
+violation
+timestamp
+4.7 Dashboard UI
+Tabs:
+Contracts
+Streaming Logs
+Payments
+Audit Results
+Violations
+Leakage Summary
+Agent Trace
+5. Multi-Agent Architecture
+Planner Agent Routes request
+Contract Reader Agent Parses contracts
+Usage Agent Aggregates logs
+Royalty Agent Calculates expected
+Ledger Agent Reads payments
+Audit Agent Compares
+Violation Agent Checks rules
+Reporter Agent Creates dashboard
+Flow:
+Contracts →
+Parser →
+Logs →
+Royalty Calc →
+Ledger →
+Audit →
+Violation →
+Dashboard
+6. Synthetic Data Requirements
+6.1 Contracts (1000)
+Format: text / pdf-like
+Fields:
+column
+type
+contract_id
+string
+content_id
+string
+studio
+string
+royalty_rate
+float
+rate_per_play
+float
+territory
+string
+start_date
+date
+end_date
+date
+tier_threshold
+int
+tier_rate
+float
+
+6.2 Streaming Logs (100K rows)
+column
+type
+play_id
+string
+content_id
+string
+timestamp
+date
+country
+string
+plays
+int
+user_type
+string
+device
+string
+Countries:
+US CA UK IN DE JP BR AU FR
+6.3 Payment Ledger (10K rows)
+column
+type
+payment_id
+string
+content_id
+string
+contract_id
+string
+amount_paid
+float
+payment_date
+date
+6.4 Expected Leakage
+Inject errors:
+5% underpaid
+3% overpaid
+2% expired license
+2% wrong territory
+Total leakage ≈ $50K
+
+7. Royalty Rules (Demo Logic)
+Example:
+if plays < threshold:
+ rate = base_rate
+else:
+ rate = tier_rate
+
+expected = plays * rate
+Check:
+if paid != expected → flag
+Territory:
+if country not in contract → violation
+Expiry:
+if timestamp > end_date → violation
+
+8. UI Requirements
+Web app
+Pages:
+Load synthetic data
+Show contracts table
+Show logs table
+Run audit
+Show leakage
+Click row → explanation
+Agent trace view
+Tech:
+React
+FastAPI
+Python
+CSV / SQLite
+Chart.js
+Charts:
+Leakage by studio
+Leakage by content
+Over vs under payment
+Violations by type
+9. Demo Script 
+Step 1
+Load contracts
+Step 2
+Load logs
+Step 3
+Load payments
+Step 4
+Run audit
+Step 5
+Show leakage
+Step 6
+Open contract
+Step 7
+Show violation
+Step 8
+Show agent trace
+Pitch line:
+"We audited 1000 contracts in 3 seconds and found $52,340 in royalty leakage."
+
+10. Files to Generate
+contracts_1000.csv
+contracts_text.txt
+streaming_logs_100k.csv
+payments_ledger.csv
+audit_results.csv
+violations.csv
+config.json
+
+11. Future Extensions
+Real PDF parsing
+LLM contract summarizer
+SAP / Stripe integration
+Blockchain royalty tracking
+Real-time streaming audit
+Agent memory
+Natural language query
+Example:
+Why was Movie_442 underpaid?
+
+13. Value Proposition
+Shows:
+✅ Contract AI ✅ Agentic workflows ✅ Financial audit automation ✅ Billing accuracy ✅ Revenue protection ✅ Explainable AI ✅ Enterprise AI
+

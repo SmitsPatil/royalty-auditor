@@ -1,0 +1,2 @@
+contract_id,content_id,studio,rate_per_play,tier_rate,tier_threshold,territory,start_date,end_date
+C1,Movie_1,StudioA,0.03,0.05,1000,US,2024-01-01,2026-01-01

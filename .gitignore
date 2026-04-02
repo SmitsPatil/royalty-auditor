@@ -1,0 +1,35 @@
+# Project Root .gitignore
+# -------------------------
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+backend/venv/
+
+# Database (SQLite) - We are moving to Postgres on Vercel
+*.db
+*.db-shm
+*.db-wal
+backend/lrac.db
+
+# Data / CSVs (Avoid pushing large generated data)
+backend/streaming_logs_*.csv
+backend/payments_ledger.csv
+backend/audit_results.csv
+backend/violations.csv
+backend/contracts_1000.csv
+
+# Frontend / Vite
+node_modules/
+dist/
+frontend/node_modules/
+frontend/dist/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
