@@ -266,10 +266,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="animate-in delay-1 flex flex-col flex-1 min-h-screen w-full max-w-none px-6 py-4">
+    <div className="animate-in delay-1">
       {/* ── Page Header ── */}
-      <div className="page-header flex items-center justify-between mb-6">
-        <div>
+      <div className="page-header flex items-center justify-between">
+        <div style={{ marginLeft: '40px' }}>
           <h1 className="page-title flex items-center gap-3">
             Audit Intelligence
             {categoryFilter && (
