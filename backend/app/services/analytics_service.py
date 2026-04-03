@@ -19,15 +19,18 @@ class AnalyticsService:
         # Total Population from Contract table
         total_contracts = db.query(Contract).count()
 
-        # Audited Stats from AuditResult table
+        # Audited Stats from AuditResult table - JOINED with active contracts to ensure parity
         status_stats = db.query(
             AuditResult.status,
             func.count(AuditResult.id).label("count"),
             func.sum(func.abs(AuditResult.difference)).label("sum_diff")
-        ).group_by(AuditResult.status).all()
+        ).join(Contract, AuditResult.contract_id == Contract.contract_id)\
+         .filter(Contract.is_deleted == 0)\
+         .group_by(AuditResult.status).all()
 
         stats_map = {s.status: {"count": s.count, "sum_diff": float(s.sum_diff or 0)} for s in status_stats}
         
+        # Explicit status mapping to ensure no stale mocks appear
         clean_count = stats_map.get("OK", {}).get("count", 0)
         overpaid_count = stats_map.get("OVERPAID", {}).get("count", 0)
         underpaid_count = stats_map.get("UNDERPAID", {}).get("count", 0)
@@ -35,11 +38,12 @@ class AnalyticsService:
         overpaid_sum = stats_map.get("OVERPAID", {}).get("sum_diff", 0)
         underpaid_sum = stats_map.get("UNDERPAID", {}).get("sum_diff", 0)
         
+        # Absolute financial delta (Leakage sum)
         total_leakage = overpaid_sum + underpaid_sum
         audited_count = clean_count + overpaid_count + underpaid_count
         
-        # Adjust compliance: relative to audited set by default, but we provide total context
-        compliance_score = round((clean_count / audited_count) * 100, 1) if audited_count > 0 else 100.0
+        # Compliance relative to the total audited population
+        compliance_score = round((clean_count / audited_count) * 100, 1) if audited_count > 0 else 0.0
 
         # 2. Studio Analysis (Focus on leakage/underpaid)
         studio_stats = db.query(
