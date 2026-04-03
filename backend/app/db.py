@@ -5,13 +5,17 @@ from typing import Generator
 
 # Database URL from environment or local fallback
 # Vercel provides POSTGRES_URL, others often use DATABASE_URL
-SQLALCHEMY_DATABASE_URL = os.getenv("POSTGRES_URL", os.getenv("DATABASE_URL", "sqlite:///./lrac.db"))
+# Neon URL from seeding scripts
+NEON_URL = "postgresql://neondb_owner:npg_9DqiwJCehv3H@ep-twilight-morning-am8zdxj4-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require"
 
-# SQLAlchemy requires postgresql:// instead of postgres:// (which Vercel/Heroku often provide)
+# Database URL from environment or fallback to Neon
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", os.getenv("POSTGRES_URL", NEON_URL))
+
+# Ensure postgresql:// is used
 if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
     SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Adjust connect_args for SQLite (needed for multi-threading)
+# Connect args (needed only for SQLite fallback, now deactivated but kept for safety)
 connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
 
 engine = create_engine(

@@ -23,12 +23,13 @@ class ContractUpdateParams(BaseModel):
     start_date: str = None
     end_date: str = None
 
+class ContractCreateBatch(BaseModel):
+    contracts: list[dict]
+
 @router.post("/upload")
-async def upload_contracts(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files allowed")
-    content = await file.read()
-    return await contract_service.upload_contracts_csv(content.decode("utf-8"), db)
+async def upload_contracts(payload: ContractCreateBatch, db: Session = Depends(get_db)):
+    """Receives parsed & cleaned JSON data from frontend (CSV/PDF extraction)."""
+    return await contract_service.upload_contracts_json(payload.contracts, db)
 
 @router.get("")
 async def get_contracts(q: str = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
