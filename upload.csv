@@ -1,0 +1,5 @@
+Contract ID,Content ID,Studio Name,Rate,Tier Rate,Threshold,Territory,Start Date,End Date
+CTR-NEON-001,CID-999,Vibe Records,15.5,0.08,5000,US,2024-04-01,2025-12-31
+CTR-NEON-002,CID-888,Legacy Audio,12.0,0.05,2500,UK,2024-05-01,2026-01-01
+CTR-MIN-01,CID-111,Minimal Studio,10.0,0.02,1000,Global,2024-01-01,2025-01-01
+CTR-MIN-02,CID-222,Minimal Studio,8.5,0.01,500,IN,2024-01-01,2025-01-01

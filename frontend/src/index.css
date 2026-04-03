@@ -1013,15 +1013,23 @@ input[type="text"]:focus {
 
 .trace-multi-trigger {
   width: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 0.5rem 0.85rem;
+  padding: 0.55rem 0.85rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.trace-multi-trigger span {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
 }
 
 .trace-multi-trigger:hover {

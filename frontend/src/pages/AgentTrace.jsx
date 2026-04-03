@@ -170,14 +170,14 @@ export default function AgentTrace() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
                <div className="flex items-center gap-2">
-                  <Database size={12} className="text-blue-400"/>
-                  <span className="text-[10px] font-black text-white uppercase tracking-tighter">
+                  <Database size={14} className="text-blue-400"/>
+                  <span className="text-[12px] font-black text-white uppercase tracking-tighter">
                     {selectedIds.length === 0 ? 'Select Contract Flows...' : 
                      selectedIds.length === 1 ? contracts.find(c => c.contract_id === selectedIds[0])?.content_id :
                      `${selectedIds.length} Contracts Selected`}
                   </span>
                </div>
-               <ChevronDown size={14} className={`text-white/20 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`}/>
+               <ChevronDown size={16} className={`text-white/40 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`}/>
             </div>
 
             {isMenuOpen && (
