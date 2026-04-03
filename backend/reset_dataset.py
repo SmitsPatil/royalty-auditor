@@ -18,14 +18,17 @@ def random_date(start, end):
 
 async def perform_dataset_reset(db: Session):
     """
-    Core logic to purge and re-seed with PRECISION CALIBRATION.
-    Forces logs to match contract territory/dates to ensure Audit match.
+    ABSOLUTE FINAL CALIBRATION.
+    Ensures 0% territory/date noise. 
+    100% variance controlled by payments.
+    Target: 100 Under (~₹2.5k total), 250 Over, 650 OK.
     """
-    print("--- 1. Purging existing dataset ---")
+    print("--- 1. Purging existing dataset (Atomic) ---")
     try:
+        # Delete in correct order for safety
+        db.query(AuditResult).delete()
         db.query(Log).delete()
         db.query(Payment).delete()
-        db.query(AuditResult).delete()
         db.query(Contract).delete()
         db.commit()
     except Exception as e:
@@ -40,28 +43,28 @@ async def perform_dataset_reset(db: Session):
     end_of_2026 = datetime(2026, 12, 31)
 
     # 1. PHASE 1: GENERATE CONTRACTS (1,000)
-    print("--- 2. Generating 1,000 Contracts (Calibrated) ---")
+    print("--- 2. Generating 1,000 Contracts ---")
     contracts = []
-    indices = list(range(1, 1001))
+    indices = list(range(0, 1000))
     random.shuffle(indices)
     
-    # Pre-assign status roles for precision
     under_indices = set(indices[:100])
     over_indices = set(indices[100:350])
     
     for i in range(1, 1001):
         c_id = f"C{i:04d}"
         category = random.choice(categories)
-        content_id = f"{category}_{random.randint(100, 999)}"
+        t = random.choice(territories)
+        
         c = Contract(
             contract_id=c_id,
-            content_id=content_id,
+            content_id=f"{category}_{random.randint(100, 999)}",
             studio=random.choice(studios),
             royalty_rate=round(random.uniform(5.0, 15.0), 2),
             rate_per_play=round(random.uniform(0.01, 0.05), 4),
             tier_rate=round(random.uniform(0.05, 0.1), 4),
             tier_threshold=random.randint(500, 2000),
-            territory=random.choice(territories),
+            territory=t,
             start_date=random_date(start_of_2023, datetime(2024, 12, 31)).strftime("%Y-%m-%d"),
             end_date=random_date(datetime(2026, 1, 1), end_of_2026).strftime("%Y-%m-%d"),
             is_deleted=0
@@ -71,24 +74,22 @@ async def perform_dataset_reset(db: Session):
     db.commit()
 
     # 2. PHASE 2: GENERATE LOGS (13,000)
-    # STRATEGY: Distribute logs across contracts, but ensure they are VALID per territory/date
-    print("--- 3. Generating 13,000 Streaming Logs ---")
+    # Ensure zero invalid logs
+    print("--- 3. Generating 13,000 Zero-Noise Logs ---")
     plays_per_contract = {c.contract_id: 0 for c in contracts}
     for i in range(1, 13001):
         target_c = random.choice(contracts)
         plays = random.randint(1, 500)
         
-        # Date must be within contract range to be counted by AuditService
         s_dt = datetime.strptime(target_c.start_date, "%Y-%m-%d")
         e_dt = datetime.strptime(target_c.end_date, "%Y-%m-%d")
-        valid_date = random_date(s_dt, e_dt)
         
         l = Log(
             play_id=f"L{i:06d}",
             contract_id=target_c.contract_id,
             content_id=target_c.content_id,
-            timestamp=valid_date.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            country=target_c.territory, # MUST match territory to be counted by AuditService
+            timestamp=random_date(s_dt, e_dt).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            country=target_c.territory, # Strict match
             plays=plays,
             user_type=random.choice(['free', 'premium']),
             device=random.choice(['mobile', 'web', 'tv'])
@@ -102,30 +103,40 @@ async def perform_dataset_reset(db: Session):
     # 3. PHASE 3: PRECISION PAYMENTS (5,000)
     print("--- 4. Generating 5,000 Calibrated Payments ---")
     payment_counter = 1
-    for i, c in enumerate(contracts, 1):
-        total_plays = plays_per_contract[c.contract_id]
-        if total_plays > c.tier_threshold and c.tier_threshold > 0:
-            expected = (c.tier_threshold * c.rate_per_play) + ((total_plays - c.tier_threshold) * c.tier_rate)
+    total_leakage_acc = 0
+    
+    for i, c in enumerate(contracts):
+        plays = plays_per_contract[c.contract_id]
+        # Exact expected logic
+        if plays > c.tier_threshold and c.tier_threshold > 0:
+            expected = (c.tier_threshold * c.rate_per_play) + ((plays - c.tier_threshold) * c.tier_rate)
         else:
-            expected = total_plays * c.rate_per_play
-        
-        # Assign paid amount based on pre-assigned role
+            expected = plays * c.rate_per_play
+            
         if i in under_indices:
-            variance = random.uniform(20.0, 30.0) # Approx 2.5k total leakage across 100
+            # Underpaid (Target: approx ₹25 leakage per contract for 100 contracts = ₹2.5k)
+            variance = random.uniform(20.0, 30.0)
             total_paid = max(0, expected - variance)
+            total_leakage_acc += abs(total_paid - expected)
         elif i in over_indices:
+            # Overpaid
             variance = random.uniform(1.0, 10.0)
             total_paid = expected + variance
         else:
+            # Clean
             total_paid = expected
             
-        payment_each = round(total_paid / 5.0, 2)
-        for _ in range(5):
+        amt_each = round(total_paid / 5.0, 2)
+        # Fix rounding drift in last payment
+        remainder = round(total_paid - (amt_each * 4), 2)
+        
+        for k in range(5):
+            val = amt_each if k < 4 else remainder
             p = Payment(
                 payment_id=f"PM{payment_counter:05d}",
                 contract_id=c.contract_id,
                 content_id=c.content_id,
-                amount_paid=payment_each,
+                amount_paid=max(0, val),
                 payment_date=random_date(start_of_2023, datetime.now()).strftime("%Y-%m-%d")
             )
             db.add(p)
@@ -133,31 +144,29 @@ async def perform_dataset_reset(db: Session):
         
         if i % 200 == 0:
             db.commit()
-            
     db.commit()
 
-    # 4. PHASE 4: AUDIT PULSE
-    print("--- 5. Initializing Audit Results ---")
+    # 4. PHASE 4: AUDIT TRIGGER
+    print("--- 5. Initializing Global Audit ---")
     audit_service = AuditService()
     await audit_service.run_audit(db)
     db.commit()
     
-    # 5. VERIFY & REPORT
-    final_under = db.query(AuditResult).filter(AuditResult.status == 'UNDERPAID').count()
-    final_over = db.query(AuditResult).filter(AuditResult.status == 'OVERPAID').count()
-    final_leakage = db.query(func.sum(func.abs(AuditResult.difference))).filter(AuditResult.status == 'UNDERPAID').scalar() or 0
-    
-    db.close()
+    # 5. VERIFY
+    res_under = db.query(AuditResult).filter(AuditResult.status == 'UNDERPAID').count()
+    res_over = db.query(AuditResult).filter(AuditResult.status == 'OVERPAID').count()
+    res_leakage = db.query(func.sum(func.abs(AuditResult.difference))).filter(AuditResult.status == 'UNDERPAID').scalar() or 0
     
     return {
         "contracts": 1000,
-        "underpaid": final_under,
-        "overpaid": final_over,
-        "total_leakage": round(final_leakage, 2),
+        "underpaid": res_under,
+        "overpaid": res_over,
+        "total_leakage": round(res_leakage, 2),
         "status": "success"
     }
 
 if __name__ == "__main__":
     db = SessionLocal()
     res = asyncio.run(perform_dataset_reset(db))
-    print(f"Recalibration Complete: Underpaid={res['underpaid']}, Overpaid={res['overpaid']}, Leakage=₹{res['total_leakage']}")
+    db.close()
+    print(f"\nVerification: Under={res['underpaid']}, Over={res['overpaid']}, Leakage=₹{res['total_leakage']}")
