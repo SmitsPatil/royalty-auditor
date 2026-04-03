@@ -361,6 +361,84 @@ export default function AgentTrace() {
             </div>
           </div>
         </section>
+
+        {/* Summary Panel: Key Outputs */}
+        <section className="trace-summary-area px-6 mb-8">
+           {summary ? (
+             <div className="trace-summary-shell">
+                <div className="summary-header">
+                   <div className="flex items-center gap-3">
+                      <Target size={18} className="text-blue-500"/>
+                      <h2 className="text-sm font-black text-white uppercase tracking-widest">Audit Analytics Summary</h2>
+                   </div>
+                   <div className="text-[10px] font-black text-white/20 uppercase tracking-tighter">Verified at {new Date(summary.timestamp || Date.now()).toLocaleTimeString()}</div>
+                </div>
+
+                <div className="summary-grid">
+                   <div className="summary-card">
+                      <span className="label">Contracts</span>
+                      <span className="value">{summary.total_contracts}</span>
+                      <span className="sub">Processed Batch</span>
+                   </div>
+                   <div className="summary-card">
+                      <span className="label">Violations</span>
+                      <span className="value text-amber-500">{summary.violations_count}</span>
+                      <span className="sub">Critical Hits</span>
+                   </div>
+                   <div className="summary-card">
+                      <span className="label">Revenue at Risk</span>
+                      <span className="value text-red-500">₹{(summary.leakage_sum + summary.overpaid_sum).toLocaleString()}</span>
+                      <span className="sub">Total Leakage Delta</span>
+                   </div>
+                   <div className="summary-card">
+                      <span className="label">Success Rate</span>
+                      <span className="value text-green-500">{summary.success_rate}%</span>
+                      <span className="sub">Healthy Compliance</span>
+                   </div>
+                </div>
+
+                <div className="summary-table-wrap">
+                   <table className="summary-table">
+                      <thead>
+                         <tr>
+                            <th>Content ID</th>
+                            <th>Contract ID</th>
+                            <th>Status</th>
+                            <th>Financial Delta</th>
+                            <th>Errors</th>
+                         </tr>
+                      </thead>
+                      <tbody>
+                         {summary.anomalies && summary.anomalies.map((anom, i) => (
+                           <tr key={i}>
+                              <td>{anom.content_id}</td>
+                              <td className="font-mono text-white/40">{anom.contract_id}</td>
+                              <td>
+                                 <div className={`status-indicator ${anom.status === 'OK' ? 'status-ok' : anom.status === 'UNDERPAID' ? 'status-error' : 'status-warn'}`}>
+                                    {anom.status}
+                                 </div>
+                              </td>
+                              <td className={anom.difference !== 0 ? 'text-red-400' : 'text-green-400'}>
+                                 ₹{anom.difference.toLocaleString()}
+                              </td>
+                              <td className="text-amber-500">{anom.violations}</td>
+                           </tr>
+                         ))}
+                         {(!summary.anomalies || summary.anomalies.length === 0) && (
+                           <tr>
+                              <td colSpan="5" className="text-center py-4 text-white/10 italic">No anomalies detected in this run</td>
+                           </tr>
+                         )}
+                      </tbody>
+                   </table>
+                </div>
+             </div>
+           ) : (
+             <div className="summary-empty">
+                Run Trace to Generate Executive Analytics Summary
+             </div>
+           )}
+        </section>
       </div>
 
     </div>

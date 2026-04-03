@@ -37,6 +37,15 @@ class AuditService:
             db.query(AuditResult).delete()
             db.commit()
 
+        summary = {
+            "total_contracts": len(contracts),
+            "violations_count": 0,
+            "leakage_sum": 0,
+            "overpaid_sum": 0,
+            "ok_count": 0,
+            "anomalies": []
+        }
+
         for contract in contracts:
             # 3. Usage Agent
             usage_query = db.query(func.sum(Log.plays)).filter(Log.contract_id == contract.contract_id)
@@ -81,9 +90,13 @@ class AuditService:
             if difference < -0.01:
                 status = "UNDERPAID"
                 violations.append(f"Underpayment detected: ${abs(difference)}")
+                summary["leakage_sum"] += abs(difference)
             elif difference > 0.01:
                 status = "OVERPAID"
                 violations.append(f"Overpayment detected: ${difference}")
+                summary["overpaid_sum"] += difference
+            else:
+                summary["ok_count"] += 1
 
             # Check for territory mismatch in logs (Violation Agent)
             if contract.territory and contract.territory not in ["Unknown", "Global"]:
@@ -94,7 +107,18 @@ class AuditService:
 
             add_trace("AuditAgent", f"Audit completed for {contract.contract_id}", {"status": status, "diff": difference})
             if violations:
+                summary["violations_count"] += len(violations)
                 add_trace("ViolationAgent", f"Detected {len(violations)} violations", {"details": violations})
+
+            # Anomaly tracking
+            if status != "OK" or violations:
+                summary["anomalies"].append({
+                    "contract_id": contract.contract_id,
+                    "content_id": contract.content_id,
+                    "status": status,
+                    "difference": difference,
+                    "violations": len(violations)
+                })
 
             # 7. Reporter Agent (Save Result)
             res = AuditResult(
@@ -112,10 +136,14 @@ class AuditService:
             db.merge(res)
             add_trace("ReporterAgent", f"Saved audit report for {contract.contract_id}")
 
+        # Final Success Rate
+        summary["success_rate"] = round((summary["ok_count"] / summary["total_contracts"]) * 100, 1) if summary["total_contracts"] > 0 else 100
+        summary["anomalies"] = sorted(summary["anomalies"], key=lambda x: abs(x["difference"]), reverse=True)[:5]
+
         db.commit()
         
         # Filter trace by selected agents if requested
         if selected_agents:
             trace = [t for t in trace if t["agent"] in selected_agents]
 
-        return {"status": "success", "trace": trace}
+        return {"status": "success", "trace": trace, "summary": summary}
