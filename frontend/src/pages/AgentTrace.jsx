@@ -100,7 +100,8 @@ export default function AgentTrace() {
         const logs = res.data.trace || res.data.agent_trace || [];
         setAgentLogs(prev => ({ ...prev, [agent.id]: logs }));
         setAgentStatus(prev => ({ ...prev, [agent.id]: 'done' }));
-        setTelemetry(prev => [...prev, ...logs.map(l => ({ ...l, agent: agent.id }))]);
+        // Ensure logs in telemetry have the correct agent ID for filtering
+        setTelemetry(prev => [...prev, ...logs.map(l => ({ ...l, agent: l.agent || agent.id }))]);
 
         if (agent.id === 'ReporterAgent' && res.data.summary) {
           setSummary(res.data.summary);
@@ -315,7 +316,9 @@ export default function AgentTrace() {
                         agentLogs[agent.id].map((log, i) => (
                           <div key={i} className="flex gap-2 text-[9px] leading-tight mb-1">
                             <span className="text-blue-500 font-bold opacity-40">{'>'}</span>
-                            <span className={getLogLvl(log.message || log.detail)}>{log.message || log.detail}</span>
+                            <span className={getLogLvl(log.message || log.detail)}>
+                              {log.message || log.detail || 'Processing...'}
+                            </span>
                           </div>
                         ))
                       ) : (

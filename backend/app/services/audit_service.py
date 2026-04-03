@@ -17,8 +17,17 @@ class AuditService:
 
         # 2. Contract Reader Agent
         contracts_query = db.query(Contract).filter(Contract.is_deleted == 0)
-        if filters and filters.get("content_id"):
-            contracts_query = contracts_query.filter(Contract.content_id == filters["content_id"])
+        
+        # Handle flexible filters
+        if filters:
+            if filters.get("content_id"):
+                contracts_query = contracts_query.filter(Contract.content_id == filters["content_id"])
+            if filters.get("contract_id"):
+                c_ids = filters["contract_id"]
+                if isinstance(c_ids, str):
+                    contracts_query = contracts_query.filter(Contract.contract_id == c_ids)
+                elif isinstance(c_ids, list):
+                    contracts_query = contracts_query.filter(Contract.contract_id.in_(c_ids))
         
         contracts = contracts_query.all()
         add_trace("ContractReaderAgent", f"Loaded {len(contracts)} active contracts", [c.contract_id for c in contracts])
@@ -103,4 +112,9 @@ class AuditService:
             add_trace("ReporterAgent", f"Saved audit report for {contract.contract_id}")
 
         db.commit()
+        
+        # Filter trace by selected agents if requested
+        if selected_agents:
+            trace = [t for t in trace if t["agent"] in selected_agents]
+
         return {"status": "success", "trace": trace}
