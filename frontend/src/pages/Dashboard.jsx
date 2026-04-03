@@ -81,6 +81,9 @@ export default function Dashboard() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [hiddenCategories, setHiddenCategories] = useState(new Set());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [audits, setAudits] = useState([]);
   const chartRef = useRef();
 
   useEffect(() => {
