@@ -89,9 +89,11 @@ const RightDrawer = ({ isOpen, onClose, title, children, footer }) => {
                 from { transform: translateX(100%); }
                 to { transform: translateX(0); }
             }
-            .custom-scrollbar-dark::-webkit-scrollbar { width: 4px; }
-            .custom-scrollbar-dark::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+            .custom-scrollbar-dark::-webkit-scrollbar { width: 3px; }
+            .custom-scrollbar-dark::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
             .custom-scrollbar-dark::-webkit-scrollbar-track { background: transparent; }
+            .animate-in { animation: fadeIn 0.4s ease-out forwards; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
     </div>
   );
@@ -395,75 +397,67 @@ export default function ContractsTable() {
         </div>
       )}
 
-      {/* ─── Side Drawer: Batch Import Workspace ─── */}
       <RightDrawer
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
-        title={uploadStep === 'preview' ? "Verify Ingestion" : "Import Workspace"}
+        title={uploadStep === 'preview' ? "Verify Ingestion" : "Import Pipeline"}
         footer={
             uploadStep === 'preview' ? (
                 <>
-                    <button className="btn w-full bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 font-bold py-2 text-xs" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>Reset</button>
-                    <button className="btn btn-blue w-full font-bold py-2 text-xs" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
-                        {isUploading ? 'Appending...' : 'Confirm & Commit'}
+                    <button className="btn w-full bg-slate-800 text-slate-400 border-none hover:bg-slate-700 font-bold py-2 text-[10px]" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>RESET</button>
+                    <button className="btn btn-blue w-full font-bold py-2 text-[10px]" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
+                        {isUploading ? 'INGESTING...' : 'CONFIRM INGEST'}
                     </button>
                 </>
             ) : (
-                <button className="btn w-full bg-slate-800 text-slate-300 border-none hover:bg-slate-700 font-bold py-2 text-xs flex justify-center gap-2" onClick={handleDownloadSample}>
+                <button className="btn w-full bg-slate-800 text-slate-400 border-none hover:bg-slate-700 font-bold py-2 text-[10px] flex justify-center gap-2" onClick={handleDownloadSample}>
                     <FileDown size={14} />
-                    Schema.csv
+                    TEMPLATE.CSV
                 </button>
             )
         }
       >
-        <div className="space-y-10">
+        <div className="space-y-6">
             {/* Section A: Upload Area */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in">
-                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">A. Source Gateway</h4>
-                    <div className="border-2 border-dashed border-slate-700 rounded-3xl p-8 text-center hover:border-blue-500 hover:bg-blue-900/10 transition-all cursor-pointer group"
+                    <h4 className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">01. Source Gateway</h4>
+                    <div className="border border-dashed border-slate-800 rounded-2xl p-6 text-center hover:border-blue-500/50 hover:bg-blue-500/[0.02] transition-all cursor-pointer group"
                          onClick={() => document.getElementById('drawer-input-dark').click()}>
-                        <div className="w-16 h-16 bg-slate-800 text-slate-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-900/50 group-hover:text-blue-400 transition-all shadow-xl">
-                            <Upload size={28} />
+                        <div className="w-12 h-12 bg-slate-800/50 text-slate-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:text-blue-400 transition-all">
+                            <Upload size={20} />
                         </div>
-                        <p className="text-[11px] font-bold text-slate-300 group-hover:text-white">Drop data files here</p>
-                        <p className="text-[9px] text-slate-500 mt-1">UTF-8 CSV or Text PDF</p>
+                        <p className="text-[10px] font-bold text-slate-400">Select CSV or PDF</p>
                     </div>
                 </div>
             )}
 
             {/* Section B: Governance Schema */}
             {uploadStep !== 'preview' && (
-                <div className="animate-in delay-1">
-                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">B. Required Mapping</h4>
-                    <div className="bg-black/40 rounded-2xl p-5 border border-slate-800/60 shadow-inner">
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center pb-2 border-b border-slate-800/40">
-                                <code className="text-blue-400 text-[10px] font-bold">contract_id*</code>
-                                <span className="text-slate-600 text-[8px] font-mono tracking-tighter uppercase">Unique PKey</span>
+                <div className="animate-in" style={{ animationDelay: '0.1s' }}>
+                    <h4 className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">02. Schema Mapping</h4>
+                    <div className="bg-black/20 rounded-xl p-4 border border-slate-800/50">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center pb-1">
+                                <code className="text-blue-500/80 text-[10px]">contract_id*</code>
+                                <span className="text-slate-700 text-[8px] font-mono tracking-tighter">PRIMARY</span>
                             </div>
-                            <div className="flex justify-between items-center pb-2 border-b border-slate-800/40">
-                                <code className="text-blue-400 text-[10px] font-bold">content_id*</code>
-                                <span className="text-slate-600 text-[8px] font-mono tracking-tighter uppercase">Asset Mapping</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <code className="text-slate-400 text-[10px]">studio</code>
-                                <span className="text-slate-600 text-[8px] font-mono tracking-tighter uppercase">Metadata</span>
+                            <div className="flex justify-between items-center pb-1">
+                                <code className="text-blue-500/80 text-[10px]">content_id*</code>
+                                <span className="text-slate-700 text-[8px] font-mono tracking-tighter">ASSET</span>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Section C: Manual Selector */}
+            {/* Section C: Local Selector */}
             {uploadStep !== 'preview' && (
-                <div className="animate-in delay-2">
-                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">C. Local Browse</h4>
+                <div className="animate-in" style={{ animationDelay: '0.2s' }}>
                     <input type="file" id="drawer-input-dark" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} />
-                    <button className="w-full bg-slate-800 text-slate-200 border border-slate-700 py-3 rounded-2xl text-[11px] font-bold hover:bg-slate-700 transition-all shadow-lg" onClick={() => document.getElementById('drawer-input-dark').click()}>
-                        Open File Explorer
+                    <button className="w-full bg-slate-800/40 text-slate-500 border border-slate-800 py-2 rounded-xl text-[10px] font-bold hover:bg-slate-800 hover:text-slate-300 transition-all" onClick={() => document.getElementById('drawer-input-dark').click()}>
+                        CHOOSE LOCAL FILE
                     </button>
-                    <p className="text-[9px] text-slate-600 mt-4 text-center">Local parsing. No data leaves your machine during verify.</p>
                 </div>
             )}
 
