@@ -274,18 +274,6 @@ export default function Dashboard() {
     }]
   };
 
-  const regionLabels = Object.keys(summary.by_region || {});
-  const regionValues = Object.values(summary.by_region || {});
-  const regionRiskData = {
-    labels: regionLabels,
-    datasets: [{
-      data: regionValues,
-      backgroundColor: '#ef4444',
-      borderRadius: 2,
-      barThickness: 6
-    }]
-  };
-
   // Local filtering for displayed alerts if statusFilter is active
   const filteredAlerts = statusFilter 
     ? recentAlerts.filter(a => a.status === statusFilter)
@@ -377,10 +365,10 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* --- Dedicated Analytics Row (Drops below to prevent overlap) --- */}
-            <div className="mt-4 w-full grid grid-cols-2 gap-6 items-start border-t border-white/5 pt-4">
-              {/* Left Column: Compliance Block */}
-              <div className="hero-kpi-card min-w-[200px] h-full flex flex-col justify-center py-3">
+            {/* --- Dedicated Analytics Row (Compliance Focus) --- */}
+            <div className="mt-4 w-full flex justify-start border-t border-white/5 pt-4">
+              {/* Compliance Block */}
+              <div className="hero-kpi-card min-w-[320px] py-4 flex flex-col justify-center">
                 <span className="hero-kpi-label text-sm">Compliance Score</span>
                 <div className="hero-kpi-value-wrap my-1">
                   <span className="hero-kpi-value text-slate-300 text-3xl">
@@ -388,30 +376,6 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <span className="hero-kpi-chip">Reliability Rating</span>
-              </div>
-              
-              {/* Right Column: Region Heat Block */}
-              <div className="glass-legend-box p-3 w-full h-full flex flex-col">
-                <span className="text-hero-muted-white text-[9px] uppercase tracking-widest block mt-2 mb-3">Region Risk – Live Heat Map</span>
-                <div className="flex flex-col space-y-2">
-                  {[
-                    { label: 'CA', val: 85 },
-                    { label: 'IN', val: 62 },
-                    { label: 'UK', val: 45 },
-                    { label: 'US', val: 28 }
-                  ].map(r => (
-                    <div key={r.label} className="flex items-center gap-3">
-                      <span className="text-[10px] text-slate-400 font-bold w-6">{r.label}</span>
-                      <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-1000" 
-                          style={{ width: `${r.val}%`, opacity: r.val / 100 }} 
-                        />
-                      </div>
-                      <span className="text-[9px] text-red-400 font-mono w-8 text-right">{r.val}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
