@@ -372,7 +372,7 @@ export default function Dashboard() {
                 <span className="hero-kpi-label text-sm">Compliance Score</span>
                 <div className="hero-kpi-value-wrap my-1">
                   <span className="hero-kpi-value text-slate-300 text-3xl">
-                    {Math.round((summary.clean / summary.total_count) * 100)}%
+                    {summary.compliance_score !== undefined ? summary.compliance_score : Math.round((summary.clean / (summary.total_count || 1)) * 100)}%
                   </span>
                 </div>
                 <span className="hero-kpi-chip">Reliability Rating</span>

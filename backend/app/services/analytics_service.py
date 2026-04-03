@@ -16,7 +16,10 @@ class AnalyticsService:
             base_query = base_query.filter(AuditResult.content_id.ilike(f"{category}%"))
         
         # 1. KPI Counts & Totals
-        # We group by status and sum counts and differences
+        # Total Population from Contract table
+        total_contracts = db.query(Contract).count()
+
+        # Audited Stats from AuditResult table
         status_stats = db.query(
             AuditResult.status,
             func.count(AuditResult.id).label("count"),
@@ -31,8 +34,12 @@ class AnalyticsService:
         
         overpaid_sum = stats_map.get("OVERPAID", {}).get("sum_diff", 0)
         underpaid_sum = stats_map.get("UNDERPAID", {}).get("sum_diff", 0)
+        
         total_leakage = overpaid_sum + underpaid_sum
-        total_count = clean_count + overpaid_count + underpaid_count
+        audited_count = clean_count + overpaid_count + underpaid_count
+        
+        # Adjust compliance: relative to audited set by default, but we provide total context
+        compliance_score = round((clean_count / audited_count) * 100, 1) if audited_count > 0 else 100.0
 
         # 2. Studio Analysis (Focus on leakage/underpaid)
         studio_stats = db.query(
@@ -114,7 +121,9 @@ class AnalyticsService:
             "underpaid": underpaid_count,
             "overpaid": overpaid_count,
             "clean": clean_count,
-            "total_count": total_count,
+            "total_count": total_contracts,
+            "audited_count": audited_count,
+            "compliance_score": compliance_score,
             "violations": violations,
             "by_studio": by_studio,
             "by_content": by_content,
