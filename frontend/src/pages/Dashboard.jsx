@@ -350,7 +350,7 @@ export default function Dashboard() {
               <div className="hero-kpi-card">
                 <div className="flex items-center justify-between mb-1">
                   <span className="hero-kpi-label">Underpaid</span>
-                  <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">Critical</span>
+                  <span className="severity-badge severity-critical" style={{ width: 'fit-content', padding: '2px 8px' }}>Critical</span>
                 </div>
                 <div className="hero-kpi-value-wrap">
                   <span className="hero-kpi-value text-hero-amber">{summary.underpaid || 0}</span>
@@ -361,7 +361,7 @@ export default function Dashboard() {
               <div className="hero-kpi-card">
                 <div className="flex items-center justify-between mb-1">
                   <span className="hero-kpi-label">Overpaid</span>
-                  <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">Audit Error</span>
+                  <span className="severity-badge severity-info" style={{ width: 'fit-content', padding: '2px 8px' }}>Audit Error</span>
                 </div>
                 <div className="hero-kpi-value-wrap">
                   <span className="hero-kpi-value text-hero-blue">{summary.overpaid || 0}</span>
@@ -389,16 +389,17 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-8 flex flex-col gap-3">
-              <div className="flex items-center gap-3 text-[11px] text-gray-200 font-medium p-3 bg-black/40 backdrop-blur-md rounded-md border border-white/5 select-none w-fit">
-                <MousePointer2 size={13} className="text-blue-400" />
-                <span>Drill-down active (click charts to filter)</span>
+              <div className="glass-info-strip">
+                <MousePointer2 size={13} className="text-hero-blue" />
+                <span className="text-hero-pure-white">Drill-down active (click charts to filter)</span>
               </div>
               
-              <div className="flex flex-col gap-2 p-3 bg-black/40 backdrop-blur-md rounded-md border border-white/5 w-fit min-w-[280px]">
-                <div className="flex items-center justify-between text-[10px] text-gray-300 uppercase tracking-widest font-bold mb-1">
-                  <span>Region Risk Heat – Top 4 regions</span>
+              <div className="glass-legend-box p-3 min-w-[320px]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-hero-muted-white" style={{ textTransform: 'uppercase', letterSpacing: '0.1rem', fontSize: '9px' }}>Region Risk Heat – Top 4 regions</span>
                 </div>
-                <div style={{ height: 50 }}>
+                
+                <div style={{ height: 60, marginBottom: '8px' }}>
                   <Bar data={regionRiskData} options={{
                     indexAxis: 'y',
                     maintainAspectRatio: false,
@@ -409,19 +410,26 @@ export default function Dashboard() {
                     }
                   }} />
                 </div>
+
+                <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2 border-t border-white/5" style={{ display: 'flex' }}>
+                  {['Mumbai', 'London', 'NY', 'Tokyo'].map(city => (
+                    <div key={city} className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#ef4444' }}></div>
+                      <span className="text-hero-pure-white" style={{ fontSize: '11px' }}>{city}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
           
           <div className="hero-right">
             <div className="flex items-center justify-between w-full h-full gap-8 overflow-visible">
-              {/* Chart Container - Ensure it doesn't clip children */}
               <div className="flex-1 h-full cursor-pointer flex items-center overflow-visible">
                 <Doughnut ref={chartRef} data={categoryChartData} options={categoryOptions} onClick={onChartClick} />
               </div>
 
-              {/* Custom High-Contrast Legend - No Clipping, High Readability */}
-              <div className="flex flex-col gap-2.5 p-4 bg-black/50 backdrop-blur-md rounded-lg border border-white/10 min-w-[180px] select-none shadow-2xl overflow-visible">
+              <div className="glass-legend-box">
                 {catLabels.map((label, i) => {
                   const val = catData[i];
                   const total = catData.reduce((a, b) => a + b, 0);
@@ -432,18 +440,18 @@ export default function Dashboard() {
                     <div 
                       key={label}
                       onClick={() => setCategoryFilter(prev => prev === label ? '' : label)}
-                      className={`flex items-center justify-between gap-6 cursor-pointer group transition-all px-2.5 py-2 rounded-md whitespace-nowrap ${isActive ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'}`}
+                      className={`legend-item-v2 ${isActive ? 'active' : ''}`}
                     >
                       <div className="flex items-center gap-3">
                         <div 
-                          className="w-2.5 h-2.5 rounded-full shadow-sm shadow-black/80" 
+                          className="w-2.5 h-2.5 rounded-full" 
                           style={{ backgroundColor: catColors[i] }}
                         />
-                        <span className={`text-[13px] font-bold drop-shadow-md transition-all text-white opacity-100`}>
+                        <span className="text-hero-pure-white">
                           {label}
                         </span>
                       </div>
-                      <span className="text-[11px] font-black text-white/50 drop-shadow-sm group-hover:text-white/100 transition-colors">
+                      <span className="text-hero-muted-white">
                         {pct}%
                       </span>
                     </div>

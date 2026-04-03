@@ -1,0 +1,130 @@
+﻿node.exe : [31mΓ£ù[39m 
+Build failed in 405ms
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo         
+     : NotSpecified: ([3  
+  1mΓ£ù[39m Build faile   
+ d in 405ms:String) [],    
+ RemoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+[31merror during build:
+[31mBuild failed with 1 
+error:
+
+[plugin vite:css-post]
+SyntaxError: [lightningcss 
+minify] Unknown at rule: 
+@keyframes
+623 |  
+624 |  /* ΓöÇΓöÇΓöÇ 
+Animations ΓöÇΓöÇΓöÇΓöÇΓöÇΓ
+öÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓ
+öÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓ
+öÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓ
+öÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓ
+öÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓ
+öÇΓöÇΓöÇΓöÇΓöÇ */
+625 |  @keyframes fadeUp {
+    |                   ^
+626 |    from { opacity: 
+0; transform: 
+translateY(8px); }
+627 |    to   { opacity: 
+1; transform: 
+translateY(0); }
+    at Module.<anonymous> (
+C:\Users\Smit\OneDrive\Desk
+top\all\Project\frontend\no
+de_modules\lightningcss\nod
+e\index.js:56:14)
+    at minifyCSS (file:///C
+:/Users/Smit/OneDrive/Deskt
+op/all/Project/frontend/nod
+e_modules/vite/dist/node/ch
+unks/node.js:21202:59)
+    at async finalizeCss (f
+ile:///C:/Users/Smit/OneDri
+ve/Desktop/all/Project/fron
+tend/node_modules/vite/dist
+/node/chunks/node.js:21048:
+36)
+    at async Promise.all 
+(index 1)
+    at async Object.run (fi
+le:///C:/Users/Smit/OneDriv
+e/Desktop/all/Project/front
+end/node_modules/vite/dist/
+node/chunks/node.js:2436:22
+)
+    at async PluginContextI
+mpl.renderChunk (file:///C:
+/Users/Smit/OneDrive/Deskto
+p/all/Project/frontend/node
+_modules/vite/dist/node/chu
+nks/node.js:20587:19)
+    at async plugin (file:/
+//C:/Users/Smit/OneDrive/De
+sktop/all/Project/frontend/
+node_modules/rolldown/dist/
+shared/bindingify-input-opt
+ions-e7ze4hPR.mjs:1234:16)
+    at async 
+plugin.<computed> (file:///
+C:/Users/Smit/OneDrive/Desk
+top/all/Project/frontend/no
+de_modules/rolldown/dist/sh
+ared/bindingify-input-optio
+ns-e7ze4hPR.mjs:1593:12)[3
+1m
+    at aggregateBindingErro
+rsIntoJsError (file:///C:/U
+sers/Smit/OneDrive/Desktop/
+all/Project/frontend/node_m
+odules/rolldown/dist/shared
+/error-BLhcSyeg.mjs:48:18)
+    at unwrapBindingResult 
+(file:///C:/Users/Smit/OneD
+rive/Desktop/all/Project/fr
+ontend/node_modules/rolldow
+n/dist/shared/error-BLhcSye
+g.mjs:18:128)
+    at #build (file:///C:/U
+sers/Smit/OneDrive/Desktop/
+all/Project/frontend/node_m
+odules/rolldown/dist/shared
+/rolldown-build-CPrIX9V6.mj
+s:3313:34)
+    at async 
+buildEnvironment (file:///C
+:/Users/Smit/OneDrive/Deskt
+op/all/Project/frontend/nod
+e_modules/vite/dist/node/ch
+unks/node.js:32849:64)
+    at async Object.build (
+file:///C:/Users/Smit/OneDr
+ive/Desktop/all/Project/fro
+ntend/node_modules/vite/dis
+t/node/chunks/node.js:33271
+:19)
+    at async 
+Object.buildApp (file:///C:
+/Users/Smit/OneDrive/Deskto
+p/all/Project/frontend/node
+_modules/vite/dist/node/chu
+nks/node.js:33268:153)
+    at async 
+CAC.<anonymous> (file:///C:
+/Users/Smit/OneDrive/Deskto
+p/all/Project/frontend/node
+_modules/vite/dist/node/cli
+.js:778:3) {
+  errors: [Getter/Setter]
+}[39m
