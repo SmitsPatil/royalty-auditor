@@ -47,39 +47,39 @@ const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, s
   );
 };
 
-/* ─── Drawer Component (High z-index, Fixed Right) ──────────────────── */
+/* ─── Drawer Component (High z-index, Dark Obsidian Theme) ──────────── */
 const RightDrawer = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
   return (
     <div 
-        className="fixed z-[2000] flex justify-end overflow-visible" 
+        className="fixed z-[9999] flex justify-end overflow-visible" 
         style={{ right: 0, top: 0, bottom: 0, pointerEvents: 'none' }}
     >
         <div 
-            className="h-full bg-white flex flex-col shadow-[-15px_0_40px_rgba(0,0,0,0.12)]" 
+            className="h-full bg-slate-900 flex flex-col shadow-[-15px_0_40px_rgba(0,0,0,0.3)]" 
             style={{ 
                 width: '380px', 
                 pointerEvents: 'auto',
-                borderLeft: '1px solid var(--border)',
-                animation: 'drawerSlideIn 0.35s cubic-bezier(0, 0, 0.2, 1) forwards'
+                borderLeft: '1px solid #1e293b',
+                animation: 'drawerSlideIn 0.35s cubic-bezier(0,0,0.2,1) forwards'
             }}
         >
-            <div className="p-5 border-b bg-white flex items-center justify-between sticky top-0 z-10">
+            <div className="p-5 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md flex items-center justify-between sticky top-0 z-10">
                 <div>
-                    <h2 className="text-base font-bold text-slate-900 leading-tight">{title}</h2>
-                    <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5 font-bold">Secure Ingestion Pipeline</p>
+                    <h2 className="text-base font-bold text-white leading-tight">{title}</h2>
+                    <p className="text-[9px] text-blue-400 uppercase tracking-widest mt-0.5 font-bold">Secure Ingestion Pipeline</p>
                 </div>
-                <button className="icon-btn hover:bg-slate-100 transition-colors" onClick={onClose}>
+                <button className="icon-btn text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" onClick={onClose}>
                     <X size={18} />
                 </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 bg-white">
+            <div className="flex-1 overflow-y-auto custom-scrollbar-dark p-5 bg-slate-900">
                 {children}
             </div>
 
             {footer && (
-                <div className="p-5 border-t bg-slate-50 flex gap-3 sticky bottom-0 z-10 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+                <div className="p-5 border-t border-slate-800 bg-slate-900 flex gap-3 sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.2)]">
                     {footer}
                 </div>
             )}
@@ -89,10 +89,9 @@ const RightDrawer = ({ isOpen, onClose, title, children, footer }) => {
                 from { transform: translateX(100%); }
                 to { transform: translateX(0); }
             }
-            .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-            .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-            .border-b { border-bottom: 1px solid var(--border); }
-            .border-t { border-top: 1px solid var(--border); }
+            .custom-scrollbar-dark::-webkit-scrollbar { width: 4px; }
+            .custom-scrollbar-dark::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+            .custom-scrollbar-dark::-webkit-scrollbar-track { background: transparent; }
         `}</style>
     </div>
   );
@@ -404,52 +403,52 @@ export default function ContractsTable() {
         footer={
             uploadStep === 'preview' ? (
                 <>
-                    <button className="btn btn-ghost flex-1" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>Reset Workflow</button>
-                    <button className="btn btn-blue flex-1" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
+                    <button className="btn w-full bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 font-bold py-2 text-xs" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>Reset</button>
+                    <button className="btn btn-blue w-full font-bold py-2 text-xs" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
                         {isUploading ? 'Appending...' : 'Confirm & Commit'}
                     </button>
                 </>
             ) : (
-                <button className="btn btn-ghost w-full" onClick={handleDownloadSample}>
-                    <FileDown size={18} className="mr-2" />
-                    Schema Template (.csv)
+                <button className="btn w-full bg-slate-800 text-slate-300 border-none hover:bg-slate-700 font-bold py-2 text-xs flex justify-center gap-2" onClick={handleDownloadSample}>
+                    <FileDown size={14} />
+                    Schema.csv
                 </button>
             )
         }
       >
-        <div className="space-y-8">
+        <div className="space-y-10">
             {/* Section A: Upload Area */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in">
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">A. Upload Workspace</h4>
-                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer group"
-                         onClick={() => document.getElementById('drawer-file-input').click()}>
-                        <div className="w-12 h-12 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-100 group-hover:text-blue-500 transition-all">
-                            <Upload size={20} />
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">A. Source Gateway</h4>
+                    <div className="border-2 border-dashed border-slate-700 rounded-3xl p-8 text-center hover:border-blue-500 hover:bg-blue-900/10 transition-all cursor-pointer group"
+                         onClick={() => document.getElementById('drawer-input-dark').click()}>
+                        <div className="w-16 h-16 bg-slate-800 text-slate-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-900/50 group-hover:text-blue-400 transition-all shadow-xl">
+                            <Upload size={28} />
                         </div>
-                        <p className="text-[11px] font-bold text-slate-700">Drop files here to start</p>
-                        <p className="text-[9px] text-slate-400 mt-1">Supports UTF-8 CSV or Text PDF</p>
+                        <p className="text-[11px] font-bold text-slate-300 group-hover:text-white">Drop data files here</p>
+                        <p className="text-[9px] text-slate-500 mt-1">UTF-8 CSV or Text PDF</p>
                     </div>
                 </div>
             )}
 
-            {/* Section B: Format Guide */}
+            {/* Section B: Governance Schema */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in delay-1">
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">B. Governance Schema</h4>
-                    <div className="bg-slate-900 rounded-xl p-4 border border-slate-800">
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                                <code className="text-blue-400 text-[10px]">contract_id*</code>
-                                <span className="text-slate-500 text-[9px] font-mono">UID</span>
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">B. Required Mapping</h4>
+                    <div className="bg-black/40 rounded-2xl p-5 border border-slate-800/60 shadow-inner">
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-800/40">
+                                <code className="text-blue-400 text-[10px] font-bold">contract_id*</code>
+                                <span className="text-slate-600 text-[8px] font-mono tracking-tighter uppercase">Unique PKey</span>
+                            </div>
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-800/40">
+                                <code className="text-blue-400 text-[10px] font-bold">content_id*</code>
+                                <span className="text-slate-600 text-[8px] font-mono tracking-tighter uppercase">Asset Mapping</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <code className="text-blue-400 text-[10px]">content_id*</code>
-                                <span className="text-slate-500 text-[9px] font-mono">Asset ID</span>
-                            </div>
-                            <div className="flex justify-between items-center pt-2 border-t border-white/5">
-                                <code className="text-slate-400 text-[10px]">rate_per_play</code>
-                                <span className="text-slate-500 text-[9px] font-mono">Float</span>
+                                <code className="text-slate-400 text-[10px]">studio</code>
+                                <span className="text-slate-600 text-[8px] font-mono tracking-tighter uppercase">Metadata</span>
                             </div>
                         </div>
                     </div>
@@ -459,12 +458,12 @@ export default function ContractsTable() {
             {/* Section C: Manual Selector */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in delay-2">
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">C. File Selector</h4>
-                    <input type="file" id="drawer-file-input" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} />
-                    <button className="btn btn-outline w-full py-2 text-xs" onClick={() => document.getElementById('drawer-file-input').click()}>
-                        Browse Local Files
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">C. Local Browse</h4>
+                    <input type="file" id="drawer-input-dark" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} />
+                    <button className="w-full bg-slate-800 text-slate-200 border border-slate-700 py-3 rounded-2xl text-[11px] font-bold hover:bg-slate-700 transition-all shadow-lg" onClick={() => document.getElementById('drawer-input-dark').click()}>
+                        Open File Explorer
                     </button>
-                    <p className="text-[9px] text-slate-400 mt-2 text-center italic">All processing happens secure and locally.</p>
+                    <p className="text-[9px] text-slate-600 mt-4 text-center">Local parsing. No data leaves your machine during verify.</p>
                 </div>
             )}
 
@@ -472,30 +471,30 @@ export default function ContractsTable() {
             {uploadStep === 'preview' && (
                 <div className="animate-in">
                     {errors.length > 0 && (
-                        <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-5">
-                            <div className="flex items-center gap-2 text-red-600 text-[11px] font-bold mb-2">
+                        <div className="bg-red-950/40 p-4 rounded-2xl border border-red-900/50 mb-6 shadow-xl">
+                            <div className="flex items-center gap-2 text-red-400 text-[11px] font-bold mb-3">
                                 <AlertCircle size={14} />
                                 <span>Batch Validation Failures</span>
                             </div>
-                            <ul className="text-[9px] text-red-500 list-disc pl-5 space-y-1">
-                                {errors.slice(0, 4).map((e, i) => <li key={i}>{e}</li>)}
+                            <ul className="text-[9px] text-red-500 list-disc pl-5 space-y-1.5 font-medium">
+                                {errors.slice(0, 5).map((e, i) => <li key={i}>{e}</li>)}
                             </ul>
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">D. Data Lineage Preview</h4>
-                        <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{previewData.length} records detected</span>
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+                        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">D. Data Lineage Trace</h4>
+                        <span className="text-[9px] font-bold text-blue-400 bg-blue-900/20 px-2 py-0.5 rounded-full border border-blue-800/30">{previewData.length} detected</span>
                     </div>
 
-                    <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar-dark">
                         {previewData.map((p, i) => (
-                            <div key={i} className={`p-2.5 rounded-lg border flex items-center justify-between group transition-all hover:bg-white ${!p.contract_id ? 'border-red-200 bg-red-50' : 'border-slate-100 bg-slate-50'}`}>
+                            <div key={i} className={`p-3 rounded-xl border flex items-center justify-between transition-all group ${!p.contract_id ? 'border-red-900/50 bg-red-950/20' : 'border-slate-800/50 bg-black/30 hover:border-blue-900/50 hover:bg-blue-950/10'}`}>
                                 <div className="min-w-0">
-                                    <div className="text-[10px] font-bold text-slate-800 truncate">{p.contract_id || 'NULL_ID'}</div>
-                                    <div className="text-[8px] text-slate-400 truncate tracking-tight">{p.studio} • {p.content_id}</div>
+                                    <div className={`text-[10px] font-bold truncate ${!p.contract_id ? 'text-red-400' : 'text-slate-200'}`}>{p.contract_id || 'UID_NULL'}</div>
+                                    <div className="text-[8px] text-slate-500 truncate tracking-tight">{p.studio} • {p.content_id}</div>
                                 </div>
-                                <span className="text-[8px] font-bold text-slate-400 px-1.5 py-0.5 bg-white rounded border border-slate-100 flex-shrink-0 ml-2 group-hover:border-blue-200 group-hover:text-blue-500 transition-colors">{p.territory}</span>
+                                <span className="text-[8px] font-bold text-slate-500 px-1.5 py-0.5 bg-slate-900 rounded border border-slate-800 flex-shrink-0 ml-2 group-hover:border-blue-800 group-hover:text-blue-400 transition-colors">{p.territory}</span>
                             </div>
                         ))}
                     </div>
