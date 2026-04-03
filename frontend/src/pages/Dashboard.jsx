@@ -418,7 +418,7 @@ export default function Dashboard() {
             </div>
           </div>
           
-          <div className="hero-right flex-col items-center">
+          <div className="hero-right" style={{ flexDirection: 'column' }}>
             <div className="flex items-center justify-between w-full h-full gap-8 overflow-visible">
               <div className="flex-1 h-full cursor-pointer flex items-center overflow-visible">
                 <Doughnut ref={chartRef} data={categoryChartData} options={categoryOptions} onClick={onChartClick} />
@@ -455,7 +455,7 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="flex items-center gap-1.5 mt-3 text-[#94a3b8] text-[10px] italic opacity-80 hover:text-white cursor-pointer transition-all" onClick={() => setCategoryFilter('')}>
+            <div className="hint-text-subtle" onClick={() => setCategoryFilter('')}>
               <MousePointer2 size={10} className="text-blue-400" />
               <span>Drill-down active (click charts to filter)</span>
             </div>
