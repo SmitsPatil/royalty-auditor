@@ -8,42 +8,68 @@ import * as pdfjsLib from 'pdfjs-dist';
 // Worker configuration for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
-// ─── Delete Confirmation Modal Component ───────────────────────────
-const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, setRetentionDays }) => {
-  if (!isOpen) return null;
+// ─── Delete Confirmation Drawer Component ──────────────────────────
+const DeleteDrawer = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, setRetentionDays, isDeleting }) => {
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header flex items-center gap-2 mb-4 text-red-600">
-          <AlertTriangle size={24} />
-          <h2 className="modal-title text-red-600">Remove Contract?</h2>
+    <RightIngestionDrawer
+      isOpen={isOpen}
+      onClose={onCancel}
+      title="Remove Contract"
+      footer={
+        <div className="flex gap-4 w-full">
+          <button className="btn btn-ghost flex-1" onClick={onCancel} disabled={isDeleting}>Cancel</button>
+          <button 
+            className="btn btn-red flex-1" 
+            onClick={onConfirm} 
+            disabled={isDeleting}
+          >
+            {isDeleting ? <div className="spinner" style={{width: 16, height: 16, borderTopColor: 'white'}} /> : 'Delete Contract'}
+          </button>
         </div>
-        <div className="modal-body">
-          <p className="mb-4 text-slate-600">
-            Are you sure you want to remove contract <strong className="text-slate-900">{contractId}</strong>? 
-            This action will immediately flag associated logs as "missing license".
-          </p>
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              Data Retention Period
-            </label>
-            <select 
-              className="search-input w-full bg-white" 
-              value={retentionDays} 
-              onChange={e => setRetentionDays(Number(e.target.value))}
-            >
-              <option value={7}>7 Days (Immediate Clean)</option>
-              <option value={30}>30 Days (Standard)</option>
-              <option value={180}>6 Months (Archive)</option>
-            </select>
+      }
+    >
+      <div className="flex flex-col gap-6">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 flex flex-col items-center text-center gap-4">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center text-red-500">
+            <AlertTriangle size={32} />
+          </div>
+          <div>
+            <h3 className="text-white font-black text-xl mb-2">Confirm Removal</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Are you sure you want to remove contract <span className="text-white font-bold">{contractId}</span>? 
+              This action will flag all associated royalties as "missing license" in the next audit.
+            </p>
           </div>
         </div>
-        <div className="modal-footer">
-          <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
-          <button className="btn btn-red" onClick={onConfirm}>Delete Contract</button>
+
+        <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
+          <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] mb-4">
+            Data Retention Strategy
+          </label>
+          <div className="space-y-3">
+            {[
+              { val: 7, label: "7 Days", desc: "Immediate Clean-up" },
+              { val: 30, label: "30 Days", desc: "Standard Compliance" },
+              { val: 180, label: "180 Days", desc: "Extended Archive" }
+            ].map(opt => (
+              <div 
+                key={opt.val}
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${retentionDays === opt.val ? 'bg-blue-600/10 border-blue-500/50' : 'bg-white/5 border-transparent hover:border-white/10'}`}
+                onClick={() => setRetentionDays(opt.val)}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white font-bold text-sm">{opt.label}</p>
+                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">{opt.desc}</p>
+                  </div>
+                  {retentionDays === opt.val && <Check size={16} className="text-blue-500" />}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </RightIngestionDrawer>
   );
 };
 
@@ -159,6 +185,7 @@ export default function ContractsTable() {
   const [savingEdit, setSavingEdit] = useState(false);
 
   const [retentionDays, setRetentionDays] = useState(30);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   /* ─── Upload Feature State ─────────────── */
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -211,6 +238,7 @@ export default function ContractsTable() {
 
   const submitRemove = async () => {
     const id = removingId;
+    setIsDeleting(true);
     try {
       await api.delete(`/contracts/${id}?retention_days=${retentionDays}`);
       setIsModalOpen(false);
@@ -220,7 +248,9 @@ export default function ContractsTable() {
         setContracts(prev => prev.filter(c => c.contract_id !== id));
       }, 800);
     } catch (e) {
-      alert("Failed to remove contract");
+      alert("FAILED TO REMOVE CONTRACT: " + (e.response?.data?.detail || e.message));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -662,14 +692,15 @@ export default function ContractsTable() {
         </RightIngestionDrawer>
       )}
 
-      {/* ─── Delete Confirmation Modal ─── */}
-      <DeleteModal 
+      {/* ─── Delete Confirmation Drawer ─── */}
+      <DeleteDrawer 
         isOpen={isModalOpen}
-        onCancel={() => { setIsModalOpen(false); setRemovingId(null); }}
+        onCancel={() => { if(!isDeleting) { setIsModalOpen(false); setRemovingId(null); } }}
         onConfirm={submitRemove}
         contractId={removingId}
         retentionDays={retentionDays}
         setRetentionDays={setRetentionDays}
+        isDeleting={isDeleting}
       />
     </div>
   );
