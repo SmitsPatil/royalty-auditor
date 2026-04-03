@@ -236,11 +236,7 @@ export default function Dashboard() {
     spacing: 5,
     plugins: {
       ...CHART_OPTIONS_DONUT.plugins,
-      legend: {
-        ...CHART_OPTIONS_DONUT.plugins.legend,
-        position: 'right',
-        labels: { ...CHART_OPTIONS_DONUT.plugins.legend.labels, color: '#94a3b8', padding: 15 }
-      },
+      legend: { display: false }, // Disable default legend
       tooltip: {
         ...CHART_OPTIONS_DONUT.plugins.tooltip,
         callbacks: {
@@ -254,28 +250,6 @@ export default function Dashboard() {
               ` ${label}: ${val} Contracts (${pct}%)`,
               ` Total Variance: ₹${leakage.toLocaleString()}`
             ];
-          }
-        }
-      },
-      legend: {
-        display: true,
-        position: 'right',
-        labels: {
-          color: '#94a3b8',
-          padding: 15,
-          font: { size: 10, weight: '600' },
-          generateLabels: (chart) => {
-            const data = chart.data;
-            const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
-            return data.labels.map((label, i) => {
-              const val = data.datasets[0].data[i];
-              const pct = total > 0 ? Math.round((val / total) * 100) : 0;
-              return {
-                text: `${label} (${pct}%)`,
-                fillStyle: data.datasets[0].backgroundColor[i],
-                index: i
-              };
-            });
           }
         }
       }
@@ -438,8 +412,42 @@ export default function Dashboard() {
           </div>
           
           <div className="hero-right">
-            <div style={{ height: '100%', width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <div className="flex items-center justify-between w-full h-full gap-6">
+              {/* Chart Container */}
+              <div className="flex-1 h-full cursor-pointer flex items-center">
                 <Doughnut ref={chartRef} data={categoryChartData} options={categoryOptions} onClick={onChartClick} />
+              </div>
+
+              {/* Custom High-Contrast Legend */}
+              <div className="flex flex-col gap-2 p-4 bg-black/40 backdrop-blur-md rounded-lg border border-white/5 min-w-[180px] select-none">
+                {catLabels.map((label, i) => {
+                  const val = catData[i];
+                  const total = catData.reduce((a, b) => a + b, 0);
+                  const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                  const isActive = categoryFilter === label;
+
+                  return (
+                    <div 
+                      key={label}
+                      onClick={() => setCategoryFilter(prev => prev === label ? '' : label)}
+                      className={`flex items-center justify-between gap-3 cursor-pointer group transition-all px-2 py-1.5 rounded-md ${isActive ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-2.5 h-2.5 rounded-full shadow-sm shadow-black/50" 
+                          style={{ backgroundColor: catColors[i] }}
+                        />
+                        <span className={`text-sm font-semibold transition-colors ${isActive ? 'text-white' : 'text-gray-200 group-hover:text-white'}`}>
+                          {label}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-bold text-white/50 group-hover:text-white/80 transition-colors">
+                        {pct}%
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
