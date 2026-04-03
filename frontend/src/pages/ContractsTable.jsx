@@ -1,7 +1,46 @@
 import { useState, useEffect } from 'react';
-import { Edit, Trash2, X, Check } from 'lucide-react';
+import { Edit, Trash2, X, Check, AlertTriangle } from 'lucide-react';
 import api from '../api';
 import { formatDate } from '../utils';
+
+// ─── Delete Confirmation Modal Component ───────────────────────────
+const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, setRetentionDays }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header flex items-center gap-2 mb-4 text-red-600">
+          <AlertTriangle size={24} />
+          <h2 className="modal-title text-red-600">Remove Contract?</h2>
+        </div>
+        <div className="modal-body">
+          <p className="mb-4 text-slate-600">
+            Are you sure you want to remove contract <strong className="text-slate-900">{contractId}</strong>? 
+            This action will immediately flag associated logs as "missing license".
+          </p>
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+              Data Retention Period
+            </label>
+            <select 
+              className="search-input w-full bg-white" 
+              value={retentionDays} 
+              onChange={e => setRetentionDays(Number(e.target.value))}
+            >
+              <option value={7}>7 Days (Immediate Clean)</option>
+              <option value={30}>30 Days (Standard)</option>
+              <option value={180}>6 Months (Archive)</option>
+            </select>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+          <button className="btn btn-red" onClick={onConfirm}>Delete Contract</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function ContractsTable() {
   const [contracts, setContracts] = useState([]);
@@ -11,6 +50,7 @@ export default function ContractsTable() {
   const [search, setSearch] = useState('');
   
   const [removingId, setRemovingId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [fadingRows, setFadingRows] = useState({});
 
   // Inline editing state
@@ -23,7 +63,6 @@ export default function ContractsTable() {
   const fetchContracts = (currentSkip, query = '') => {
     setLoading(true);
     api.get(`/contracts?limit=100&skip=${currentSkip}&q=${query}`).then(r => {
-      // Handle the paginated backend response
       const data = r.data.data || r.data || [];
       if (data.length < 100) setHasMore(false);
       
@@ -53,10 +92,16 @@ export default function ContractsTable() {
     fetchContracts(nextSkip, search);
   };
 
+  const handleDeleteClick = (id) => {
+    setRemovingId(id);
+    setIsModalOpen(true);
+  };
+
   const submitRemove = async () => {
     const id = removingId;
     try {
       await api.delete(`/contracts/${id}?retention_days=${retentionDays}`);
+      setIsModalOpen(false);
       setRemovingId(null);
       setFadingRows(prev => ({...prev, [id]: true}));
       setTimeout(() => {
@@ -129,38 +174,17 @@ export default function ContractsTable() {
               <tr><td colSpan={10} className="text-center py-10 text-muted">No contracts found.</td></tr>
             ) : contracts.map(c => {
               const isEditing = editingContractId === c.contract_id;
-              const isRemoving = removingId === c.contract_id;
 
               return (
               <tr key={c.contract_id} style={{ 
                 transition: 'opacity 0.4s ease, transform 0.4s ease', 
                 opacity: fadingRows[c.contract_id] ? 0 : 1, 
-                background: isEditing ? 'rgba(59, 130, 246, 0.05)' : isRemoving ? 'rgba(239, 68, 68, 0.05)' : undefined,
+                background: isEditing ? 'rgba(59, 130, 246, 0.05)' : undefined,
                 transform: fadingRows[c.contract_id] ? 'translateX(10px)' : 'none'
               }}>
                 <td className="font-bold">{c.contract_id}</td>
                 
-                {isRemoving ? (
-                  <>
-                    <td colSpan={8}>
-                      <div className="flex items-center gap-4 py-1">
-                        <span className="text-red font-bold flex items-center gap-2"><Trash2 size={14}/> Confirm Removal?</span>
-                        <div className="flex items-center gap-2">
-                          <label className="text-xs text-muted">Retain for:</label>
-                          <select className="search-input text-xs py-0 px-2" style={{ height: '24px', width: 'auto' }} value={retentionDays} onChange={e => setRetentionDays(Number(e.target.value))}>
-                            <option value={7}>7 Days</option>
-                            <option value={30}>30 Days</option>
-                            <option value={180}>6 Months</option>
-                          </select>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button className="btn btn-sm btn-red mr-1" onClick={submitRemove}>Delete</button>
-                      <button className="btn btn-sm btn-ghost" onClick={() => setRemovingId(null)}>Cancel</button>
-                    </td>
-                  </>
-                ) : isEditing ? (
+                {isEditing ? (
                   <>
                     <td>{c.content_id}</td>
                     <td><input className="search-input text-xs py-1 px-2" value={editingDraft.studio || ''} onChange={e => setEditingDraft({...editingDraft, studio: e.target.value})} /></td>
@@ -171,8 +195,14 @@ export default function ContractsTable() {
                     <td><input type="date" className="search-input text-xs py-1 px-1" value={editingDraft.start_date || ''} onChange={e => setEditingDraft({...editingDraft, start_date: e.target.value})} /></td>
                     <td><input type="date" className="search-input text-xs py-1 px-1" value={editingDraft.end_date || ''} onChange={e => setEditingDraft({...editingDraft, end_date: e.target.value})} /></td>
                     <td style={{ textAlign: 'right' }}>
-                      <button className="btn btn-sm btn-blue mr-1" onClick={submitEdit} disabled={savingEdit}>Save</button>
-                      <button className="btn btn-sm btn-ghost" onClick={cancelEdit} disabled={savingEdit}>Cancel</button>
+                      <div className="flex gap-2 justify-end">
+                        <button className="icon-btn icon-btn-edit" onClick={submitEdit} disabled={savingEdit} title="Save Changes">
+                          {savingEdit ? <div className="spinner" style={{width: 14, height: 14}}/> : <Check size={16}/>}
+                        </button>
+                        <button className="icon-btn" onClick={cancelEdit} disabled={savingEdit} title="Cancel Editing">
+                          <X size={16}/>
+                        </button>
+                      </div>
                     </td>
                   </>
                 ) : (
@@ -186,8 +216,22 @@ export default function ContractsTable() {
                     <td className="text-muted">{formatDate(c.start_date)}</td>
                     <td className="text-muted">{formatDate(c.end_date)}</td>
                     <td style={{ textAlign: 'right' }}>
-                      <button className="btn btn-sm btn-outline mr-2" onClick={() => startEdit(c)}>Edit</button>
-                      <button className="btn btn-sm btn-ghost text-red" onClick={() => setRemovingId(c.contract_id)}>Delete</button>
+                      <div className="actions-cell">
+                        <button 
+                          className="icon-btn icon-btn-edit" 
+                          onClick={() => startEdit(c)} 
+                          title="Edit Contract"
+                        >
+                          <Edit size={16}/>
+                        </button>
+                        <button 
+                          className="icon-btn icon-btn-delete" 
+                          onClick={() => handleDeleteClick(c.contract_id)} 
+                          title="Remove Contract"
+                        >
+                          <Trash2 size={16}/>
+                        </button>
+                      </div>
                     </td>
                   </>
                 )}
@@ -206,6 +250,16 @@ export default function ContractsTable() {
           </button>
         </div>
       )}
+
+      {/* ─── Delete Confirmation Modal ─── */}
+      <DeleteModal 
+        isOpen={isModalOpen}
+        onCancel={() => { setIsModalOpen(false); setRemovingId(null); }}
+        onConfirm={submitRemove}
+        contractId={removingId}
+        retentionDays={retentionDays}
+        setRetentionDays={setRetentionDays}
+      />
     </div>
   );
 }
