@@ -43,22 +43,26 @@ async def get_contracts(q: str = None, skip: int = 0, limit: int = 100, db: Sess
                     Contract.studio.ilike(f"%{q}%")
                 )
             )
+        total = query.count()
         rows = query.offset(skip).limit(limit).all()
-        return [
-            {
-                "contract_id":    r.contract_id,
-                "content_id":     r.content_id,
-                "studio":         r.studio,
-                "royalty_rate":   r.royalty_rate,
-                "rate_per_play":  r.rate_per_play,
-                "tier_rate":      r.tier_rate,
-                "tier_threshold": r.tier_threshold,
-                "territory":      r.territory,
-                "start_date":     r.start_date,
-                "end_date":       r.end_date,
-            }
-            for r in rows
-        ]
+        return {
+            "total": total,
+            "data": [
+                {
+                    "contract_id":    r.contract_id,
+                    "content_id":     r.content_id,
+                    "studio":         r.studio,
+                    "royalty_rate":   r.royalty_rate,
+                    "rate_per_play":  r.rate_per_play,
+                    "tier_rate":      r.tier_rate,
+                    "tier_threshold": r.tier_threshold,
+                    "territory":      r.territory,
+                    "start_date":     r.start_date,
+                    "end_date":       r.end_date,
+                }
+                for r in rows
+            ]
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
