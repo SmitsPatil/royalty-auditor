@@ -8,6 +8,10 @@ import {
 } from 'lucide-react';
 import api from '../api';
 
+// Component Shims for legacy/missing icons
+function BarChart3({ size }) { return <Activity size={size}/>; }
+function Fingerprint({ size }) { return <Shield size={size}/>; }
+
 const AGENTS = [
   { id: 'Orchestrator', icon: <Cpu size={14}/>, desc: 'Coordinating Audit Pipeline' },
   { id: 'ContractReader', icon: <FileSearch size={14}/>, desc: 'Parsing Royalties & Tiers' },
@@ -18,9 +22,6 @@ const AGENTS = [
   { id: 'Violation', icon: <AlertTriangle size={14}/>, desc: 'Flagging Rogue Stream IDs' },
   { id: 'Reporter', icon: <Send size={14}/>, desc: 'Syncing Financial Summary' }
 ];
-
-function BarChart3({ size }) { return <Activity size={size}/>; }
-function Fingerprint({ size }) { return <Shield size={size}/>; }
 
 export default function AgentTrace() {
   const [contracts, setContracts] = useState([]);
@@ -244,12 +245,12 @@ export default function AgentTrace() {
         </div>
 
         <div className="flex items-center gap-6">
-           {summary && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-green-500/5 border border-green-500/20 rounded-md">
-                 <ShieldCheck size={12} className="text-green-500/50"/>
-                 <span className="text-[10px] font-black text-green-500 uppercase tracking-tighter">₹{summary.total_leakage?.toLocaleString()}</span>
-              </div>
-           )}
+            {summary && (
+               <div className="flex items-center gap-2 px-3 py-1 bg-green-500/5 border border-green-500/20 rounded-md">
+                  <ShieldCheck size={12} className="text-green-500/50"/>
+                  <span className="text-[10px] font-black text-green-500 uppercase tracking-tighter">₹{(summary.total_leakage || 0).toLocaleString()}</span>
+               </div>
+            )}
            <div className="flex items-center gap-3">
               <span className="text-[9px] font-black text-[#AAB4C5] tabular-nums">{progress}%</span>
               <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
