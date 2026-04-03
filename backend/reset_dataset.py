@@ -18,14 +18,12 @@ def random_date(start, end):
 
 async def perform_dataset_reset(db: Session):
     """
-    ABSOLUTE FINAL CALIBRATION.
-    Ensures 0% territory/date noise. 
-    100% variance controlled by payments.
-    Target: 100 Under (~₹2.5k total), 250 Over, 650 OK.
+    ABSOLUTE PRECISION RESET.
+    100 Under, 250 Over, 650 OK.
+    Zero floating point noise due to sync'd rounding.
     """
-    print("--- 1. Purging existing dataset (Atomic) ---")
+    print("--- 1. Purging existing dataset ---")
     try:
-        # Delete in correct order for safety
         db.query(AuditResult).delete()
         db.query(Log).delete()
         db.query(Payment).delete()
@@ -74,13 +72,11 @@ async def perform_dataset_reset(db: Session):
     db.commit()
 
     # 2. PHASE 2: GENERATE LOGS (13,000)
-    # Ensure zero invalid logs
     print("--- 3. Generating 13,000 Zero-Noise Logs ---")
     plays_per_contract = {c.contract_id: 0 for c in contracts}
     for i in range(1, 13001):
         target_c = random.choice(contracts)
         plays = random.randint(1, 500)
-        
         s_dt = datetime.strptime(target_c.start_date, "%Y-%m-%d")
         e_dt = datetime.strptime(target_c.end_date, "%Y-%m-%d")
         
@@ -89,7 +85,7 @@ async def perform_dataset_reset(db: Session):
             contract_id=target_c.contract_id,
             content_id=target_c.content_id,
             timestamp=random_date(s_dt, e_dt).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            country=target_c.territory, # Strict match
+            country=target_c.territory,
             plays=plays,
             user_type=random.choice(['free', 'premium']),
             device=random.choice(['mobile', 'web', 'tv'])
@@ -103,31 +99,27 @@ async def perform_dataset_reset(db: Session):
     # 3. PHASE 3: PRECISION PAYMENTS (5,000)
     print("--- 4. Generating 5,000 Calibrated Payments ---")
     payment_counter = 1
-    total_leakage_acc = 0
     
     for i, c in enumerate(contracts):
         plays = plays_per_contract[c.contract_id]
-        # Exact expected logic
         if plays > c.tier_threshold and c.tier_threshold > 0:
             expected = (c.tier_threshold * c.rate_per_play) + ((plays - c.tier_threshold) * c.tier_rate)
         else:
             expected = plays * c.rate_per_play
             
+        # CRITICAL SYNC: EXACTLY MATCH THE AUDIT SERVICE CLASSIFICATION
+        expected = round(expected, 2)
+            
         if i in under_indices:
-            # Underpaid (Target: approx ₹25 leakage per contract for 100 contracts = ₹2.5k)
             variance = random.uniform(20.0, 30.0)
-            total_paid = max(0, expected - variance)
-            total_leakage_acc += abs(total_paid - expected)
+            total_paid = max(0, round(expected - variance, 2))
         elif i in over_indices:
-            # Overpaid
             variance = random.uniform(1.0, 10.0)
-            total_paid = expected + variance
+            total_paid = round(expected + variance, 2)
         else:
-            # Clean
             total_paid = expected
             
         amt_each = round(total_paid / 5.0, 2)
-        # Fix rounding drift in last payment
         remainder = round(total_paid - (amt_each * 4), 2)
         
         for k in range(5):

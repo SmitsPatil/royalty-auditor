@@ -73,6 +73,7 @@ class AuditService:
             add_trace("LedgerAgent", f"Retrieved payment records for {contract.contract_id}", {"paid": paid_amount})
 
             # 6. Audit & Violation Agents
+            expected_royalty = round(expected_royalty, 2)
             difference = round(paid_amount - expected_royalty, 2)
             status = "OK"
             violations = []
