@@ -49,16 +49,27 @@ const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, s
 
 /* ─── Inbound Verify Drawer (Right-Side, Full Height) ─────────────── */
 const RightIngestionDrawer = ({ isOpen, onClose, title, children, footer }) => {
+  // Disable background scroll when drawer is active
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
+
   return (
     <>
       {/* Drawer Overlay */}
       <div 
         style={{
           position: 'fixed', inset: 0, 
-          zIndex: 9998, background: 'rgba(0,0,0,0.4)', 
-          backdropFilter: 'blur(2px)',
-          opacity: isOpen ? 1 : 0, pointerEvents: isOpen ? 'auto' : 'none',
-          transition: 'opacity 0.3s ease'
+          zIndex: 9998, background: 'rgba(0,0,0,0.5)', 
+          backdropFilter: 'blur(4px)',
+          opacity: isOpen ? 1 : 0, 
+          pointerEvents: isOpen ? 'auto' : 'none',
+          transition: 'all 0.3s ease'
         }}
         onClick={onClose}
       />
@@ -69,16 +80,18 @@ const RightIngestionDrawer = ({ isOpen, onClose, title, children, footer }) => {
               position: 'fixed', top: 0, right: 0, 
               width: '420px', height: '100vh', 
               background: '#0f172a', color: 'white',
-              boxShadow: '-10px 0 50px rgba(0,0,0,0.5)',
+              boxShadow: '-10px 0 30px rgba(0,0,0,0.4)',
               borderLeft: '1px solid rgba(255,255,255,0.08)',
               display: 'flex', flexDirection: 'column',
-              zIndex: 9999, transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              zIndex: 9999, 
+              overflowY: 'auto',
+              transition: 'transform 0.3s ease',
               transform: isOpen ? 'translateX(0)' : 'translateX(100%)'
           }}
           onClick={e => e.stopPropagation()}
       >
           {/* Header */}
-          <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0f172a', position: 'sticky', top: 0, zIndex: 10 }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', margin: 0, letterSpacing: '-0.02em' }}>{title}</h2>
                   <p style={{ fontSize: '10px', color: '#60a5fa', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: '6px' }}>Secure Ingestion Internal</p>
@@ -94,13 +107,13 @@ const RightIngestionDrawer = ({ isOpen, onClose, title, children, footer }) => {
           </div>
           
           {/* Main Body */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '32px' }} className="custom-scrollbar-dark">
+          <div style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: '32px' }} className="custom-scrollbar-dark">
               {children}
           </div>
 
           {/* Footer Persistence */}
           {footer && (
-              <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
+              <div style={{ padding: '24px', borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)', position: 'sticky', bottom: 0 }}>
                   {footer}
               </div>
           )}
