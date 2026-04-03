@@ -53,22 +53,26 @@ async def get_audit_results(q: str = None, category: str = None, skip: int = 0, 
                     AuditResult.studio.ilike(f"%{q}%")
                 )
             )
+        total = query.count()
         rows = query.offset(skip).limit(limit).all()
-        return [
-            {
-                "id":           r.id,
-                "contract_id":  r.contract_id,
-                "content_id":   r.content_id,
-                "studio":       r.studio,
-                "expected":     r.expected,
-                "paid":         r.paid,
-                "difference":   r.difference,
-                "status":       r.status,
-                "violations":   r.violations.split(" | ") if r.violations else [],
-                "total_plays":  r.total_plays,
-                "timestamp":    r.timestamp,
-            }
-            for r in rows
-        ]
+        return {
+            "total": total,
+            "data": [
+                {
+                    "id":           r.id,
+                    "contract_id":  r.contract_id,
+                    "content_id":   r.content_id,
+                    "studio":       r.studio,
+                    "expected":     r.expected,
+                    "paid":         r.paid,
+                    "difference":   r.difference,
+                    "status":       r.status,
+                    "violations":   r.violations.split(" | ") if r.violations else [],
+                    "total_plays":  r.total_plays,
+                    "timestamp":    r.timestamp,
+                }
+                for r in rows
+            ]
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

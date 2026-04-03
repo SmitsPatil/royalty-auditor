@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Download, AlertTriangle } from 'lucide-react';
+import { Download, AlertTriangle, Search, Eye, Flag, ShieldAlert } from 'lucide-react';
 import api from '../api';
 import { formatDate } from '../utils';
 
@@ -10,8 +10,14 @@ export default function Violations() {
 
   const fetchViolations = (query = '') => {
     setLoading(true);
+    // Fetch specifically for violations (filter is handled by calculating breaches from results)
     api.get(`/audit/results?limit=1000&q=${query}`).then(r => {
-      setResults(r.data.filter(x => x.violations && x.violations.length > 0));
+      // The backend returns a list in 'data' based on my previous change
+      const allResults = r.data.data || r.data || [];
+      setResults(allResults.filter(x => x.violations && x.violations.length > 0));
+      setLoading(false);
+    }).catch(err => {
+      console.error("Failed to fetch violations", err);
       setLoading(false);
     });
   };
@@ -26,70 +32,90 @@ export default function Violations() {
   const handleExport = () =>
     window.open(`${import.meta.env.VITE_API_URL || ''}/api/export/violations.csv`, '_blank');
 
-
   return (
-    <div className="animate-in delay-1">
-      <div className="page-header flex items-center justify-between">
+    <div className="animate-in delay-1 flex flex-col flex-1 min-h-screen w-full max-w-none px-6 py-4">
+      <div className="page-header flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="page-title">Violations</h1>
-            <span className="badge badge-red">{results.length} breaches</span>
+            <h1 className="page-title">Compliance Violations</h1>
+            <span className="badge badge-red font-bold px-3">{results.length} active breaches</span>
           </div>
-          <p className="page-subtitle">Contract enforcement failures and billing anomalies</p>
+          <p className="page-subtitle">Contract enforcement failures and automated billing anomalies</p>
         </div>
         <div className="flex items-center gap-4">
-          <input 
-            type="text" 
-            placeholder="Search Breach/Title..." 
-            className="search-input"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ width: '280px' }}
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search Breach/Title..." 
+              className="search-input pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ width: '300px' }}
+            />
+          </div>
           <button className="btn btn-outline" onClick={handleExport}>
             <Download size={14} /> Export CSV
           </button>
         </div>
       </div>
-      {loading && results.length === 0 ? (
-        <div className="loading-wrap" style={{ minHeight: '300px' }}><div className="spinner"/><span>Scanning violations…</span></div>
+
+      {loading ? (
+        <div className="loading-wrap flex-1" style={{ minHeight: '400px' }}><div className="spinner"/><span>Scanning system for violations…</span></div>
       ) : (
-      <div className="table-wrap">
-        <table className="data-table">
+      <div className="table-wrap flex-1">
+        <table className="data-table table-zebra">
           <thead>
             <tr>
-              <th>Contract</th><th>Content</th><th>Violation Reason</th>
-              <th>Financial Impact</th><th>Status</th><th>Flagged</th>
+              <th style={{ minWidth: '150px' }}>Contract</th>
+              <th style={{ minWidth: '180px' }}>Content</th>
+              <th style={{ minWidth: '250px' }}>Violation Reason</th>
+              <th style={{ minWidth: '150px' }}>Financial Impact</th>
+              <th style={{ minWidth: '120px' }}>Severity</th>
+              <th style={{ minWidth: '150px' }}>Flagged Date</th>
+              <th style={{ textAlign: 'right', minWidth: '160px', position: 'sticky', right: 0, background: '#f8fafc', boxShadow: '-2px 0 5px rgba(0,0,0,0.05)' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {results.map((r, i) => (
+            {results.length === 0 ? (
+              <tr><td colSpan={7} className="text-center py-20 text-muted">
+                <div className="flex flex-col items-center gap-3">
+                  <ShieldAlert size={48} className="text-green opacity-20" />
+                  <span>No violations found. Your licensing environment is clean!</span>
+                </div>
+              </td></tr>
+            ) : results.map((r, i) => (
               <tr key={i}>
-                <td className="font-semibold text-sm">{r.contract_id !== 'UNKNOWN' ? r.contract_id : <span className="text-muted">No Contract</span>}</td>
-                <td className="text-sm">{r.content_id}</td>
-                <td className="text-sm">
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                <td className="font-bold">{r.contract_id !== 'UNKNOWN' ? r.contract_id : <span className="text-muted italic">No Contract</span>}</td>
+                <td className="text-secondary">{r.content_id}</td>
+                <td>
+                  <div className="flex flex-wrap gap-1">
                     {r.violations.map((v, idx) => (
-                      <span key={idx} className="badge badge-red" style={{ borderRadius: '4px', display: 'inline-block', width: 'fit-content' }}>
+                      <span key={idx} className="badge badge-red text-xs py-0.5 px-2" style={{ borderRadius: '4px' }}>
                         {v}
                       </span>
                     ))}
                   </div>
                 </td>
-                <td className={`text-sm font-semibold ${r.difference !== 0 ? 'text-red' : 'text-muted'}`}>
+                <td className={`font-bold ${r.difference !== 0 ? 'text-red' : 'text-muted'}`}>
                   ₹{Math.abs(r.difference).toLocaleString()}
                 </td>
                 <td>
                   {r.status === 'UNDERPAID'
-                    ? <span className="badge badge-red">Underpaid</span>
-                    : <span className="badge badge-amber">Overpaid</span>}
+                    ? <span className="badge badge-red font-bold">CRITICAL</span>
+                    : <span className="badge badge-amber font-bold">WARNING</span>}
                 </td>
-                <td className="text-sm text-muted">{formatDate(r.timestamp)}</td>
+                <td className="text-muted">{formatDate(r.timestamp)}</td>
+                <td style={{ textAlign: 'right', position: 'sticky', right: 0, background: 'inherit', boxShadow: '-2px 0 5px rgba(0,0,0,0.02)' }}>
+                  <button className="action-btn action-btn-edit mr-2" title="Investigate">
+                    <Eye size={14}/> <span>Review</span>
+                  </button>
+                  <button className="action-btn action-btn-delete" title="Mark as Resolved">
+                    <Flag size={14}/> <span>Resolve</span>
+                  </button>
+                </td>
               </tr>
             ))}
-            {results.length === 0 && (
-              <tr><td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>No violations found. Clean audit!</td></tr>
-            )}
           </tbody>
         </table>
       </div>
