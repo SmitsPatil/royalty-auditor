@@ -47,6 +47,86 @@ const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, s
   );
 };
 
+/* ─── Drawer Component (Slide-in from Right) ────────────────────────── */
+const RightDrawer = ({ isOpen, onClose, title, children, footer, activeSection, setActiveSection, onDownloadSample }) => {
+  if (!isOpen) return null;
+  return (
+    <div 
+        className="fixed inset-0 z-[1000] flex justify-end" 
+        style={{ background: 'rgba(15, 23, 42, 0.15)', backdropFilter: 'blur(3px)' }}
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+        <div 
+            className="h-full bg-white flex flex-col shadow-2xl animate-in" 
+            style={{ 
+                width: '460px', 
+                animation: 'slideInRight 0.4s cubic-bezier(0, 0, 0.2, 1)',
+                borderLeft: '1px solid var(--border)'
+            }}
+        >
+            <div className="border-bottom bg-slate-50 sticky top-0 z-10">
+                <div className="p-6 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-lg font-bold text-slate-900 leading-tight">{title}</h2>
+                        <p className="text-xs text-slate-500 mt-1">Batch Management Workspace</p>
+                    </div>
+                    <button className="icon-btn hover:bg-slate-200 transition-colors" onClick={onClose}>
+                        <X size={20} />
+                    </button>
+                </div>
+                
+                {/* Secondary Header Navigation */}
+                <div className="px-6 pb-4 flex gap-4">
+                    <button 
+                        className={`text-xs font-bold uppercase tracking-wider pb-1 border-b-2 transition-all ${activeSection === 'upload' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        onClick={() => setActiveSection('upload')}
+                    >
+                        Upload
+                    </button>
+                    <button 
+                        className={`text-xs font-bold uppercase tracking-wider pb-1 border-b-2 transition-all ${activeSection === 'info' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        onClick={() => setActiveSection('info')}
+                    >
+                        Format Info
+                    </button>
+                    <button 
+                        className="text-xs font-bold uppercase tracking-wider pb-1 border-b-2 border-transparent text-slate-400 hover:text-blue-500 transition-all ml-auto flex items-center gap-1"
+                        onClick={onDownloadSample}
+                    >
+                        <FileDown size={14} />
+                        Sample CSV
+                    </button>
+                </div>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+                {children}
+            </div>
+
+            {footer && (
+                <div className="p-6 border-top bg-slate-50 flex gap-3 sticky bottom-0 z-10 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+                    {footer}
+                </div>
+            )}
+        </div>
+        <style>{`
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0.5; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            .border-bottom { border-bottom: 1px solid var(--border); }
+            .border-top { border-top: 1px solid var(--border); }
+            .sticky { position: sticky; }
+            .inset-0 { top: 0; left: 0; right: 0; bottom: 0; }
+            .fixed { position: fixed; }
+            .space-y-6 > * + * { margin-top: 1.5rem; }
+            .space-y-3 > * + * { margin-top: 0.75rem; }
+            .space-y-1 > * + * { margin-top: 0.25rem; }
+        `}</style>
+    </div>
+  );
+};
+
 export default function ContractsTable() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,8 +146,8 @@ export default function ContractsTable() {
   const [retentionDays, setRetentionDays] = useState(30);
 
   // --- Upload Feature State ---
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('upload'); // 'upload' | 'info'
   const [uploadStep, setUploadStep] = useState('select'); // 'select' | 'preview'
   const [previewData, setPreviewData] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -197,7 +277,6 @@ export default function ContractsTable() {
         }
       });
     } else if (file.name.toLowerCase().endsWith('.pdf')) {
-        // PDF logic simplified for brevity but functional
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
         let text = '';
@@ -240,7 +319,8 @@ export default function ContractsTable() {
   };
 
   return (
-    <div className="animate-in delay-1">
+    <div className="animate-in delay-1 overflow-visible">
+      {/* ─── Page Header ─── */}
       <div className="page-header flex items-center justify-between">
         <div>
           <h1 className="page-title">Contract Repository</h1>
@@ -253,17 +333,16 @@ export default function ContractsTable() {
             className="search-input"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ width: '320px' }}
+            style={{ width: '300px' }}
           />
-          <div className="flex gap-2">
-            <button className="icon-btn icon-btn-edit" style={{ borderRadius: '12px' }} onClick={() => setIsInfoModalOpen(true)} title="Format Requirements">
-              <Info size={18} />
-            </button>
-            <button className="btn btn-blue flex items-center gap-2" onClick={() => { setIsUploadModalOpen(true); setUploadStep('select'); }}>
-              <Upload size={18} />
-              <span>Upload CSV/PDF</span>
-            </button>
-          </div>
+          <button 
+            className="btn btn-blue flex items-center gap-2" 
+            onClick={() => { setIsUploadModalOpen(true); setUploadStep('select'); }}
+            style={{ padding: '0.6rem 1.25rem' }}
+          >
+            <Upload size={18} />
+            <span>Manage Imports</span>
+          </button>
           <span className="badge badge-blue">{contracts.length} visible</span>
         </div>
       </div>
@@ -294,8 +373,7 @@ export default function ContractsTable() {
                 background: isEditing ? 'rgba(59, 130, 246, 0.05)' : undefined,
                 transform: fadingRows[c.contract_id] ? 'translateX(10px)' : 'none'
               }}>
-                <td className="font-bold">{c.contract_id}</td>
-                
+                <td className="font-bold whitespace-nowrap">{c.contract_id}</td>
                 {isEditing ? (
                   <>
                     <td>{c.content_id}</td>
@@ -329,20 +407,8 @@ export default function ContractsTable() {
                     <td className="text-muted">{formatDate(c.end_date)}</td>
                     <td style={{ textAlign: 'right' }}>
                       <div className="actions-cell">
-                        <button 
-                          className="icon-btn icon-btn-edit" 
-                          onClick={() => startEdit(c)} 
-                          title="Edit Contract"
-                        >
-                          <Edit size={16}/>
-                        </button>
-                        <button 
-                          className="icon-btn icon-btn-delete" 
-                          onClick={() => handleDeleteClick(c.contract_id)} 
-                          title="Remove Contract"
-                        >
-                          <Trash2 size={16}/>
-                        </button>
+                        <button className="icon-btn icon-btn-edit" onClick={() => startEdit(c)} title="Edit Contract"><Edit size={16}/></button>
+                        <button className="icon-btn icon-btn-delete" onClick={() => handleDeleteClick(c.contract_id)} title="Remove Contract"><Trash2 size={16}/></button>
                       </div>
                     </td>
                   </>
@@ -352,16 +418,127 @@ export default function ContractsTable() {
           </tbody>
         </table>
       </div>
-      
       )}
       
       {hasMore && !loading && (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
-          <button className="btn btn-outline" onClick={loadMore}>
-            Load More Contracts
-          </button>
+          <button className="btn btn-outline" onClick={loadMore}>Load More Contracts</button>
         </div>
       )}
+
+      {/* ─── Side Drawer: Batch Import & Help ─── */}
+      <RightDrawer
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        title={uploadStep === 'preview' ? "Review Import" : (activeSection === 'info' ? "Format Requirements" : "Upload Contracts")}
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        onDownloadSample={handleDownloadSample}
+        footer={
+            uploadStep === 'preview' ? (
+                <>
+                    <button className="btn btn-ghost flex-1" onClick={() => setUploadStep('select')}>Back</button>
+                    <button className="btn btn-blue flex-1" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
+                        {isUploading ? 'Appending...' : 'Confirm Appending'}
+                    </button>
+                </>
+            ) : null
+        }
+      >
+        <div className="space-y-6">
+            {activeSection === 'info' ? (
+                <div className="animate-in">
+                    <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+                        To ensure successful integration, your CSV must follow the standardized governance structure below.
+                    </p>
+                    <div className="bg-slate-950 rounded-2xl p-6 shadow-xl mb-6">
+                        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Mandatory Schema</h4>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                                <span className="text-xs font-mono text-blue-400">contract_id</span>
+                                <span className="text-[10px] text-slate-400">Unique Identifier</span>
+                            </div>
+                            <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                                <span className="text-xs font-mono text-blue-400">content_id</span>
+                                <span className="text-[10px] text-slate-400">Asset Ref</span>
+                            </div>
+                        </div>
+                        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-8 mb-4">Optional Metadata</h4>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center pb-3 border-b border-white/5 text-slate-300">
+                                <span className="text-xs font-mono">studio</span>
+                                <span className="text-[10px] text-slate-500">Legal Name</span>
+                            </div>
+                            <div className="flex justify-between items-center pb-3 border-b border-white/5 text-slate-300">
+                                <span className="text-xs font-mono">territory</span>
+                                <span className="text-[10px] text-slate-500">ISO Codes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button className="btn btn-blue w-full" onClick={() => setActiveSection('upload')}>
+                        Continue to Upload
+                    </button>
+                </div>
+            ) : uploadStep === 'select' ? (
+                <>
+                    <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 mb-6 group cursor-pointer" onClick={() => setActiveSection('info')}>
+                        <div className="flex items-center gap-3 text-blue-700 font-bold text-sm mb-2">
+                            <Info size={18} className="text-blue-500" />
+                            <span>Quick Format Guide</span>
+                        </div>
+                        <p className="text-xs text-blue-600/80 leading-relaxed">
+                            Required headers: <code className="bg-blue-100/50 px-1 rounded">contract_id</code>, 
+                            <code className="bg-blue-100/50 px-1 ml-1 rounded">content_id</code>. Click to view full schema.
+                        </p>
+                    </div>
+
+                    <div className="border-2 border-dashed border-slate-200 rounded-3xl p-10 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer group"
+                         onClick={() => document.getElementById('drawer-upload').click()}>
+                        <input type="file" id="drawer-upload" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} />
+                        <div className="w-20 h-20 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-100 group-hover:text-blue-500 transition-all transform group-hover:scale-110 shadow-inner">
+                            <Upload size={32} />
+                        </div>
+                        <h3 className="font-bold text-slate-800 text-base">Select Source File</h3>
+                        <p className="text-xs text-slate-500 mt-2">Supports CSV (Standard) and PDF (Automated Extraction)</p>
+                    </div>
+                </>
+            ) : (
+                <div className="animate-in">
+                    {errors.length > 0 && (
+                        <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-6 shadow-sm">
+                            <div className="flex items-center gap-2 text-red-600 font-bold text-sm mb-3">
+                                <AlertCircle size={18} />
+                                <span>Critical Errors Found</span>
+                            </div>
+                            <ul className="text-xs text-red-500 list-disc pl-5 space-y-1.5 font-medium">
+                                {errors.slice(0, 5).map((e, i) => <li key={i}>{e}</li>)}
+                                {errors.length > 5 && <li className="list-none pt-1">...and {errors.length - 5} more</li>}
+                            </ul>
+                        </div>
+                    )}
+                    <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ingestion Preview</h4>
+                        <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{previewData.length} records detected</span>
+                    </div>
+                    <div className="space-y-3">
+                        {previewData.slice(0, 20).map((p, i) => (
+                            <div key={i} className={`p-4 rounded-2xl border transition-all hover:bg-white hover:shadow-md ${!p.contract_id ? 'border-red-200 bg-red-50' : 'border-slate-100 bg-slate-50'}`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="font-bold text-xs text-slate-800">{p.contract_id || 'ID MISSING'}</span>
+                                    <span className="text-[10px] bg-white px-2 py-1 rounded-lg border border-slate-200 font-bold text-slate-600">{p.territory}</span>
+                                </div>
+                                <div className="text-[10px] text-slate-500 flex items-center gap-2">
+                                    <span className="truncate max-w-[120px]">{p.studio}</span>
+                                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                    <span className="font-mono">{p.content_id}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+      </RightDrawer>
 
       {/* ─── Delete Confirmation Modal ─── */}
       <DeleteModal 
@@ -372,111 +549,6 @@ export default function ContractsTable() {
         retentionDays={retentionDays}
         setRetentionDays={setRetentionDays}
       />
-
-      {/* ─── Format Info Modal ─── */}
-      {isInfoModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '500px' }}>
-            <div className="modal-header">
-                <div className="flex items-center gap-2 text-blue-600">
-                    <Info size={24} />
-                    <h2 className="modal-title text-blue-600">Required CSV Structure</h2>
-                </div>
-                <button className="icon-btn" onClick={() => setIsInfoModalOpen(false)}><X size={20}/></button>
-            </div>
-            <div className="modal-body">
-              <p className="text-slate-600 mb-4">Ensure your CSV files have the following exact headers:</p>
-              <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <div className="text-blue-600">contract_id*</div>
-                <div className="text-blue-600">content_id*</div>
-                <div>studio</div>
-                <div>rate_per_play</div>
-                <div>tier_rate</div>
-                <div>tier_threshold</div>
-                <div>territory</div>
-                <div>start_date</div>
-                <div>end_date</div>
-              </div>
-              <p className="text-xs text-muted mt-4">* mandatory fields</p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-ghost flex items-center gap-2" onClick={handleDownloadSample}>
-                <FileDown size={18} />
-                Download Sample CSV
-              </button>
-              <button className="btn btn-blue" onClick={() => setIsInfoModalOpen(false)}>Got it</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── Upload workflow Modal ─── */}
-      {isUploadModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: uploadStep === 'preview' ? '900px' : '500px' }}>
-            <div className="modal-header">
-                <h2 className="modal-title">Batch Import Contracts</h2>
-                <button className="icon-btn" onClick={() => setIsUploadModalOpen(false)}><X size={20}/></button>
-            </div>
-            <div className="modal-body">
-                {uploadStep === 'select' ? (
-                    <div className="py-10 text-center">
-                        <input type="file" id="batch-file" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} style={{ display: 'none' }} />
-                        <label htmlFor="batch-file" className="cursor-pointer">
-                            <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-blue-200 hover:bg-blue-100 transition-colors">
-                                <Upload size={32} />
-                            </div>
-                            <h3 className="font-bold text-slate-800">Select File to Parse</h3>
-                            <p className="text-muted text-sm mt-1">Supports CSV and text-based PDFs</p>
-                        </label>
-                    </div>
-                ) : (
-                    <div>
-                        {errors.length > 0 && (
-                            <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-4">
-                                <div className="flex items-center gap-2 text-red-600 font-bold text-sm mb-2">
-                                    <AlertCircle size={16} />
-                                    <span>Validation Errors</span>
-                                </div>
-                                <ul className="text-xs text-red-500 list-disc pl-5">
-                                    {errors.map((e, i) => <li key={i}>{e}</li>)}
-                                </ul>
-                            </div>
-                        )}
-                        <div className="table-wrap" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                            <table className="data-table text-xs">
-                                <thead>
-                                    <tr>
-                                        <th>Contract ID</th><th>Content</th><th>Studio</th><th>Rate</th><th>Territory</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {previewData.map((p, i) => (
-                                        <tr key={i} className={!p.contract_id ? 'bg-red-50' : ''}>
-                                            <td className="font-bold">{p.contract_id || 'MISSING'}</td>
-                                            <td>{p.content_id}</td>
-                                            <td>{p.studio}</td>
-                                            <td>₹{p.rate_per_play}</td>
-                                            <td>{p.territory}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-            </div>
-            <div className="modal-footer">
-                <button className="btn btn-ghost" onClick={() => setIsUploadModalOpen(false)}>Cancel</button>
-                {uploadStep === 'preview' && (
-                    <button className="btn btn-blue" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
-                        {isUploading ? 'Appending...' : `Confirm Import (${previewData.length} Records)`}
-                    </button>
-                )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
