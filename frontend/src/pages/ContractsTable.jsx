@@ -47,47 +47,75 @@ const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, s
   );
 };
 
-/* ─── Centered Obsidian Card Component (Modern Ingestion UI) ────────── */
+/* ─── Fixed Modal Ingestion Card (Vanilla CSS - No Tailwind Dependency) ─ */
 const CenteredIngestionCard = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
   return (
-    <div className="flex flex-col items-center justify-center w-full animate-in" style={{ margin: '40px auto' }}>
+    <>
+      {/* Fixed Overlay */}
       <div 
-          className="relative bg-[#0f172a] text-white p-[20px] rounded-[12px] shadow-[0_10px_30px_rgba(0,0,0,0.4)] overflow-hidden" 
-          style={{ width: '100%', maxWidth: '420px', border: '1px solid rgba(255,255,255,0.05)' }}
+        style={{
+          position: 'fixed', inset: 0, 
+          zIndex: 9998, background: 'rgba(0,0,0,0.6)', 
+          backdropFilter: 'blur(4px)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+          animation: 'modalFadeIn 0.3s ease-out forwards'
+        }}
+        onClick={onClose}
       >
-          {/* Card Header */}
-          <div className="flex items-center justify-between mb-[20px] border-b border-white/5 pb-4">
-              <h2 className="text-[18px] font-bold tracking-tight text-white">{title}</h2>
-              <button 
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-all"
-                  onClick={onClose}
-              >
-                  <X size={18} />
-              </button>
-          </div>
-          
-          {/* Card Body */}
-          <div className="flex flex-col gap-[12px]">
-              {children}
-          </div>
+        {/* Card Container */}
+        <div 
+            style={{ 
+                width: '420px', background: '#0f172a', color: 'white',
+                padding: '24px', borderRadius: '16px', 
+                boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex', flexDirection: 'column', gap: '20px',
+                pointerEvents: 'auto', animation: 'cardPopUp 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards'
+            }}
+            onClick={e => e.stopPropagation()}
+        >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'white', margin: 0 }}>{title}</h2>
+                    <p style={{ fontSize: '10px', color: '#60a5fa', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }}>Secure Ingestion Pipeline</p>
+                </div>
+                <button 
+                    style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                    onClick={onClose}
+                    onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                    onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                >
+                    <X size={18} />
+                </button>
+            </div>
+            
+            {/* Body */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, overflowY: 'auto', maxHeight: '70vh', paddingRight: '4px' }} className="custom-scrollbar-dark">
+                {children}
+            </div>
 
-          {/* Card Footer */}
-          {footer && (
-              <div className="mt-[20px] pt-4 border-t border-white/5 flex flex-col gap-3">
-                  {footer}
-              </div>
-          )}
+            {/* Footer */}
+            {footer && (
+                <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px' }}>
+                    {footer}
+                </div>
+            )}
+        </div>
       </div>
 
       <style>{`
-          .custom-scrollbar-dark::-webkit-scrollbar { width: 3px; }
-          .custom-scrollbar-dark::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+          @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes cardPopUp { 
+              from { opacity: 0; transform: translateY(20px) scale(0.95); } 
+              to { opacity: 1; transform: translateY(0) scale(1); } 
+          }
+          .custom-scrollbar-dark::-webkit-scrollbar { width: 4px; }
+          .custom-scrollbar-dark::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
           .custom-scrollbar-dark::-webkit-scrollbar-track { background: transparent; }
-          .animate-in { animation: fadeIn 0.4s ease-out forwards; }
-          @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
-    </div>
+    </>
   );
 };
 
@@ -392,101 +420,118 @@ export default function ContractsTable() {
       <CenteredIngestionCard
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
-        title={uploadStep === 'preview' ? "Batch Verification" : "Import Workspace"}
+        title={uploadStep === 'preview' ? "Verification Pipeline" : "Import Workspace"}
         footer={
             uploadStep === 'preview' ? (
-                <div className="flex gap-3">
-                    <button className="btn flex-1 bg-white/5 text-slate-400 hover:bg-white/10 font-bold py-2.5 text-[11px] uppercase" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>Reset</button>
-                    <button className="btn btn-blue flex-1 font-bold py-2.5 text-[11px] uppercase" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
-                        {isUploading ? 'Ingesting...' : 'Confirm & Commit'}
+                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                    <button 
+                        style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '8px', color: '#94a3b8', fontSize: '11px', fontWeight: '700', cursor: 'pointer', textTransform: 'uppercase' }}
+                        onClick={() => { setUploadStep('select'); setPreviewData([]); }}
+                    >
+                        Reset
+                    </button>
+                    <button 
+                        style={{ flex: 1.5, padding: '10px', background: '#3b82f6', border: 'none', borderRadius: '8px', color: 'white', fontSize: '11px', fontWeight: '700', cursor: 'pointer', textTransform: 'uppercase', opacity: (errors.length > 0 || isUploading) ? 0.5 : 1 }}
+                        disabled={errors.length > 0 || isUploading}
+                        onClick={confirmUpload}
+                    >
+                        {isUploading ? 'Ingesting...' : 'Confirm Ingest'}
                     </button>
                 </div>
             ) : (
-                <button className="btn w-full bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10 font-bold py-2.5 rounded-lg text-[11px] uppercase flex items-center justify-center gap-2" onClick={handleDownloadSample}>
+                <button 
+                    style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#cbd5e1', fontSize: '11px', fontWeight: '700', cursor: 'pointer', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    onClick={handleDownloadSample}
+                >
                     <FileDown size={14} />
                     Download Schema Template
                 </button>
             )
         }
       >
-        <div className="flex flex-col gap-[12px]">
-            {/* 01. Source Gateway (Modern Upload) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Gateway Section */}
             {uploadStep !== 'preview' && (
-                <div className="animate-in">
-                    <h4 className="text-[16px] font-bold text-white mb-3">Gateway Ingestion</h4>
-                    <div className="border border-dashed border-white/20 rounded-xl p-8 text-center hover:border-blue-500 hover:bg-blue-500/5 transition-all cursor-pointer group"
-                         onClick={() => document.getElementById('drawer-input-final').click()}>
-                        <div className="w-12 h-12 bg-white/5 text-slate-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:text-blue-400 transition-all">
-                            <Upload size={20} />
-                        </div>
-                        <p className="text-[13px] font-bold text-white">Drop files to ingest</p>
-                        <p className="text-[12px] text-slate-500 mt-1">UTF-8 CSV or Text-PDF</p>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'white', marginBottom: '12px' }}>01. Inbound Gateway</h4>
+                    <div 
+                        style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '12px', padding: '32px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s', background: 'rgba(59, 130, 246, 0.02)' }}
+                        onClick={() => document.getElementById('final-upload-input').click()}
+                        onMouseOver={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.08)'; }}
+                        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.02)'; }}
+                    >
+                        <Upload size={24} style={{ color: '#60a5fa', marginBottom: '12px' }} />
+                        <p style={{ fontSize: '13px', fontWeight: '700', color: 'white', margin: 0 }}>Drop data files here</p>
+                        <p style={{ fontSize: '11px', color: '#64748b', marginTop: '6px' }}>UTF-8 CSV or Professional PDF</p>
                     </div>
                 </div>
             )}
 
-            {/* Local Disk Explorer */}
+            {/* Disk Section */}
             {uploadStep !== 'preview' && (
-                <div className="animate-in" style={{ animationDelay: '0.1s' }}>
-                    <label className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">02. Local Disk</label>
-                    <input type="file" id="drawer-input-final" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} />
-                    <button className="w-full bg-white/5 text-white border border-white/10 py-3 rounded-xl text-[13px] font-bold hover:bg-white/10 transition-all" onClick={() => document.getElementById('drawer-input-final').click()}>
-                        Open File Explorer
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>02. Local File Explorer</label>
+                    <input type="file" id="final-upload-input" accept=".csv,.pdf" style={{ display: 'none' }} onChange={handleFileSelect} />
+                    <button 
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '12px', borderRadius: '10px', color: 'white', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                        onClick={() => document.getElementById('final-upload-input').click()}
+                    >
+                        Browse Records
                     </button>
                 </div>
             )}
 
-            {/* 03. Format Guide */}
+            {/* Format Guide Section */}
             {uploadStep !== 'preview' && (
-                <div className="animate-in" style={{ animationDelay: '0.2s' }}>
-                    <label className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">03. Format Guide</label>
-                    <div className="bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner">
-                        <div className="flex flex-col gap-[8px]">
-                            <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                                <code className="text-blue-400 text-[12px] font-bold">contract_id*</code>
-                                <span className="text-slate-600 text-[10px] font-mono tracking-tighter uppercase">Unique PKey</span>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>03. Schema Governance</label>
+                    <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '8px' }}>
+                                <code style={{ color: '#3b82f6', fontSize: '12px', fontWeight: '700' }}>contract_id*</code>
+                                <span style={{ color: '#475569', fontSize: '9px', fontWeight: '700', textTransform: 'uppercase' }}>Primary ID</span>
                             </div>
-                            <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                                <code className="text-blue-400 text-[12px] font-bold">content_id*</code>
-                                <span className="text-slate-600 text-[10px] font-mono tracking-tighter uppercase">Asset Mapping</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '8px' }}>
+                                <code style={{ color: '#3b82f6', fontSize: '12px', fontWeight: '700' }}>content_id*</code>
+                                <span style={{ color: '#475569', fontSize: '9px', fontWeight: '700', textTransform: 'uppercase' }}>Asset Mapping</span>
                             </div>
-                            <div className="flex justify-between items-center text-slate-500">
-                                <code className="text-[12px]">studio</code>
-                                <span className="text-[10px] font-mono tracking-tighter uppercase">Metadata</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <code style={{ color: '#64748b', fontSize: '12px' }}>studio</code>
+                                <span style={{ color: '#475569', fontSize: '9px', fontWeight: '700', textTransform: 'uppercase' }}>Optional</span>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Preview Results */}
+            {/* Preview View */}
             {uploadStep === 'preview' && (
-                <div className="animate-in">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {errors.length > 0 && (
-                        <div className="bg-red-950/40 p-4 rounded-xl border border-red-900/50 mb-6 shadow-xl">
-                            <div className="flex items-center gap-2 text-red-500 text-[13px] font-bold mb-2">
+                        <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', padding: '16px' }}>
+                            <div style={{ display: 'flex', itemsCenter: 'center', gap: '8px', color: '#ef4444', fontSize: '12px', fontWeight: '800', marginBottom: '8px' }}>
                                 <AlertCircle size={16} />
-                                <span>Validation Issues</span>
+                                <span>VALIDATION FAILURES</span>
                             </div>
-                            <ul className="text-[12px] text-red-400 list-disc pl-5 space-y-1 font-medium">
+                            <ul style={{ paddingLeft: '16px', color: '#fca5a5', fontSize: '11px', gap: '4px', display: 'flex', flexDirection: 'column' }}>
                                 {errors.slice(0, 3).map((e, i) => <li key={i}>{e}</li>)}
                             </ul>
                         </div>
                     )}
                     
-                    <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-[16px] font-bold text-white tracking-tight">Lineage Trace</h4>
-                        <span className="text-[11px] font-bold text-blue-400 bg-blue-900/40 px-2 py-0.5 rounded-md border border-blue-800/50">{previewData.length} Records</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'white' }}>Lineage Trace</h4>
+                        <span style={{ fontSize: '10px', background: '#1e3a8a', color: '#bfdbfe', padding: '3px 8px', borderRadius: '4px', fontWeight: '700' }}>{previewData.length} records detected</span>
                     </div>
 
-                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar-dark">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '350px', overflowY: 'auto' }} className="custom-scrollbar-dark">
                         {previewData.map((p, i) => (
-                            <div key={i} className={`p-4 rounded-xl border flex items-center justify-between transition-all group ${!p.contract_id ? 'border-red-900/50 bg-red-950/20' : 'border-white/5 bg-black/30 hover:border-blue-900/50 hover:bg-blue-950/20'}`}>
-                                <div className="min-w-0">
-                                    <div className={`text-[12px] font-bold truncate ${!p.contract_id ? 'text-red-400' : 'text-slate-200'}`}>{p.contract_id || 'NULL_KEY'}</div>
-                                    <p className="text-[11px] text-slate-500 truncate mt-0.5 tracking-tight">{p.studio} • {p.content_id}</p>
+                            <div key={i} style={{ padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
+                                    <span style={{ fontSize: '11px', fontWeight: '700', color: p.contract_id ? 'white' : '#ef4444', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.contract_id || 'MISSING_UID'}</span>
+                                    <span style={{ fontSize: '10px', color: '#64748b' }}>{p.content_id}</span>
                                 </div>
-                                <span className="text-[10px] font-bold text-slate-500 px-2 py-1 bg-slate-900 rounded border border-white/5 uppercase flex-shrink-0 ml-2">{p.territory}</span>
+                                <div style={{ fontSize: '9px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', background: 'rgba(0,0,0,0.2)', padding: '2px 6px', borderRadius: '4px' }}>{p.territory}</div>
                             </div>
                         ))}
                     </div>
