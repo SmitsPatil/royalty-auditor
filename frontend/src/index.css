@@ -1481,6 +1481,17 @@ input[type="text"]:focus {
   opacity: 1;
 }
 
+.legend-item-hidden {
+  opacity: 0.45;
+  font-style: italic;
+  filter: grayscale(0.8);
+  text-decoration: line-through;
+  pointer-events: auto;
+}
+.legend-item-hidden:hover {
+  opacity: 0.7;
+}
+
 /* ─── High Contrast Dropdown ────────────────────────────────────────── */
 .trace-multi-menu.high-contrast {
   background: #0D1117 !important;

@@ -78,12 +78,9 @@ const CHART_OPTIONS_DONUT = {
 
 export default function Dashboard() {
   const [summary, setSummary]   = useState(null);
-  const [audits,  setAudits]    = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [error,   setError]     = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  
+  const [hiddenCategories, setHiddenCategories] = useState(new Set());
   const chartRef = useRef();
 
   useEffect(() => {
@@ -214,7 +211,7 @@ export default function Dashboard() {
   const categoryChartData = {
     labels: catLabels,
     datasets: [{
-      data: catData,
+      data: catLabels.map(l => hiddenCategories.has(l) ? 0 : catMetrics[l].count),
       backgroundColor: catColors,
       hoverBackgroundColor: catColors.map(c => c + 'dd'),
       borderWidth: 0
@@ -317,8 +314,8 @@ export default function Dashboard() {
       </div>
 
       {/* ── Dashboard Hero Section ── */}
-      <div className={`dashboard-hero animate-in delay-1 ${loading && !!summary ? 'opacity-50' : ''}`}>
-        <div className="hero-split">
+      <div className={`dashboard-hero p-4 animate-in delay-1 ${loading && !!summary ? 'opacity-50' : ''}`}>
+        <div className="hero-split items-start gap-6">
           <div className="hero-left">
             <div className="hero-kpi-grid">
               <div className="hero-kpi-card">
@@ -377,7 +374,10 @@ export default function Dashboard() {
                 </div>
                 <span className="hero-kpi-chip">Audit Confirmed</span>
               </div>
-              <div className="hero-kpi-card">
+            </div>
+
+            <div className="mt-6 grid grid-cols-3 gap-6 items-start">
+              <div className="hero-kpi-card h-full justify-center">
                 <span className="hero-kpi-label">Compliance score</span>
                 <div className="hero-kpi-value-wrap">
                   <span className="hero-kpi-value" style={{ color: '#94a3b8' }}>
@@ -386,10 +386,8 @@ export default function Dashboard() {
                 </div>
                 <span className="hero-kpi-chip">Reliability Rating</span>
               </div>
-            </div>
-
-            <div className="mt-8 flex flex-col gap-3">
-              <div className="glass-legend-box p-3 min-w-[320px]">
+              
+              <div className="col-span-2 glass-legend-box p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-hero-muted-white" style={{ textTransform: 'uppercase', letterSpacing: '0.1rem', fontSize: '9px' }}>Region Risk Heat – Top 4 regions</span>
                 </div>
@@ -417,7 +415,7 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          
+
           <div className="hero-right" style={{ flexDirection: 'column' }}>
             <div className="flex items-center justify-between w-full h-full gap-8 overflow-visible">
               <div className="flex-1 h-full cursor-pointer flex items-center overflow-visible">
@@ -426,27 +424,32 @@ export default function Dashboard() {
 
               <div className="glass-legend-box">
                 {catLabels.map((label, i) => {
-                  const val = catData[i];
-                  const total = catData.reduce((a, b) => a + b, 0);
+                  const val = catMetrics[label]?.count || 0;
+                  const total = catLabels.reduce((acc, curr) => acc + (catMetrics[curr]?.count || 0), 0);
                   const pct = total > 0 ? Math.round((val / total) * 100) : 0;
                   const isActive = categoryFilter === label;
+                  const isHidden = hiddenCategories.has(label);
 
-                  return (
+                   return (
                     <div 
                       key={label}
-                      onClick={() => setCategoryFilter(prev => prev === label ? '' : label)}
-                      className={`legend-item-v2 ${isActive ? 'active' : ''}`}
+                      className={`legend-item-v2 ${isActive ? 'active' : ''} ${isHidden ? 'legend-item-hidden' : ''}`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 cursor-pointer group" onClick={() => {
+                        const newHidden = new Set(hiddenCategories);
+                        if (newHidden.has(label)) newHidden.delete(label);
+                        else newHidden.add(label);
+                        setHiddenCategories(newHidden);
+                      }}>
                         <div 
-                          className="w-2.5 h-2.5 rounded-full" 
-                          style={{ backgroundColor: catColors[i] }}
+                          className="w-2.5 h-2.5 rounded-full transition-all" 
+                          style={{ backgroundColor: isHidden ? '#64748b' : catColors[i] }}
                         />
-                        <span className="text-hero-pure-white">
+                        <span className="text-hero-pure-white group-hover:text-white">
                           {label}
                         </span>
                       </div>
-                      <span className="text-hero-muted-white">
+                      <span className="text-hero-muted-white text-[10px]">
                         {pct}%
                       </span>
                     </div>
