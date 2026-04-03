@@ -218,10 +218,7 @@ export default function Dashboard() {
     }]
   };
 
-  const onChartClick = (event) => {
-    const { current: chart } = chartRef;
-    if (!chart) return;
-    const elements = getElementAtEvent(chart, event);
+  const onChartClick = (event, elements) => {
     if (elements.length > 0) {
       const index = elements[0].index;
       const label = catLabels[index];
@@ -231,6 +228,7 @@ export default function Dashboard() {
 
   const categoryOptions = {
     ...CHART_OPTIONS_DONUT,
+    onClick: onChartClick,
     cutout: '82%',
     spacing: 5,
     plugins: {
@@ -435,11 +433,14 @@ export default function Dashboard() {
                       key={label}
                       className={`legend-item-v2 ${isActive ? 'active' : ''} ${isHidden ? 'legend-item-hidden' : ''}`}
                     >
-                      <div className="flex items-center gap-3 cursor-pointer group" onClick={() => {
-                        const newHidden = new Set(hiddenCategories);
-                        if (newHidden.has(label)) newHidden.delete(label);
-                        else newHidden.add(label);
-                        setHiddenCategories(newHidden);
+                      <div className="flex items-center gap-3 cursor-pointer group" onClick={(e) => {
+                        e.stopPropagation();
+                        setHiddenCategories(prev => {
+                          const next = new Set(prev);
+                          if (next.has(label)) next.delete(label);
+                          else next.add(label);
+                          return next;
+                        });
                       }}>
                         <div 
                           className="w-2.5 h-2.5 rounded-full transition-all" 
@@ -449,7 +450,7 @@ export default function Dashboard() {
                           {label}
                         </span>
                       </div>
-                      <span className="text-hero-muted-white text-[10px]">
+                      <span className="text-hero-muted-white text-[10px] pointer-events-none">
                         {pct}%
                       </span>
                     </div>
