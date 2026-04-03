@@ -295,6 +295,16 @@ export default function ContractsTable() {
 
     const progressInterval = simulateProgress();
 
+    // Fuzzy header matcher
+    const getVal = (row, variants) => {
+        const keys = Object.keys(row);
+        for (const v of variants) {
+            const match = keys.find(k => k.toLowerCase().replace(/[\s_-]/g, '') === v.toLowerCase().replace(/[\s_-]/g, ''));
+            if (match) return row[match];
+        }
+        return null;
+    };
+
     try {
         if (file.name.toLowerCase().endsWith('.csv')) {
             Papa.parse(file, {
@@ -303,21 +313,36 @@ export default function ContractsTable() {
                 complete: (results) => {
                     clearInterval(progressInterval);
                     setUploadProgress(100);
-                    const cleaned = results.data.map(row => ({
-                        contract_id: row.contract_id || '',
-                        content_id: row.content_id || '',
-                        studio: row.studio || 'Unknown',
-                        rate_per_play: parseFloat(row.rate_per_play || 0),
-                        tier_rate: parseFloat(row.tier_rate || 0),
-                        tier_threshold: parseInt(row.tier_threshold || 0),
-                        territory: row.territory || 'Global',
-                        start_date: row.start_date || new Date().toISOString().split('T')[0],
-                        end_date: row.end_date || '2030-12-31'
-                    }));
+                    
+                    const cleaned = results.data.map(row => {
+                        const cid = getVal(row, ['contract_id', 'contractid', 'id', 'contract']);
+                        const contId = getVal(row, ['content_id', 'contentid', 'cid', 'asset_id']);
+                        
+                        if (!cid && !contId) return null; // Skip truly empty or invalid row
+
+                        return {
+                            contract_id: cid || '',
+                            content_id: contId || '',
+                            studio: getVal(row, ['studio', 'studioname', 'label']) || 'Unknown',
+                            rate_per_play: parseFloat(getVal(row, ['rate_per_play', 'rate', 'rpp']) || 0),
+                            tier_rate: parseFloat(getVal(row, ['tier_rate', 'tierrate', 'tr']) || 0),
+                            tier_threshold: parseInt(getVal(row, ['tier_threshold', 'threshold', 'tt']) || 0),
+                            territory: getVal(row, ['territory', 'region']) || 'Global',
+                            start_date: getVal(row, ['start_date', 'startdate', 'from']) || new Date().toISOString().split('T')[0],
+                            end_date: getVal(row, ['end_date', 'enddate', 'to']) || '2030-12-31'
+                        };
+                    }).filter(r => r !== null);
+
                     setTimeout(() => {
-                        setPreviewData(cleaned);
-                        setErrors(validateData(cleaned));
-                        setUploadStep('preview');
+                        if (cleaned.length === 0) {
+                            setErrors(["COLUMN MISMATCH: Could not find mandatory headers 'contract_id' or 'content_id'. Please check your file."]);
+                            setPreviewData([]);
+                            setUploadStep('preview');
+                        } else {
+                            setPreviewData(cleaned);
+                            setErrors(validateData(cleaned));
+                            setUploadStep('preview');
+                        }
                         setUploadStatus('idle');
                     }, 400);
                 }
@@ -361,13 +386,20 @@ export default function ContractsTable() {
   const confirmUpload = async () => {
     setIsUploading(true);
     try {
-      await api.post('/contracts/upload-batch', { contracts: previewData });
-      alert(`Success: ${previewData.length} contracts appended.`);
-      setIsUploadModalOpen(false);
-      setUploadStep('select');
-      fetchContracts(0, search);
+      const res = await api.post('/contracts/upload-batch', { contracts: previewData });
+      if (res.data?.status === 'success') {
+          alert(`SUCCESS: ${res.data.count} contracts successfully committed to Neon PostgreSQL.`);
+          setIsUploadModalOpen(false);
+          setUploadStep('select');
+          setPreviewData([]);
+          setUploadingFile(null);
+          // Trigger forced refresh
+          setContracts([]);
+          setSkip(0);
+          fetchContracts(0, search);
+      }
     } catch (err) {
-      alert("Upload failed: " + (err.response?.data?.detail || err.message));
+      alert("INGESTION FAILED: " + (err.response?.data?.detail || err.message));
     } finally {
       setIsUploading(false);
     }
