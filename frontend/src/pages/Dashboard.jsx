@@ -317,99 +317,99 @@ export default function Dashboard() {
       {/* ── Dashboard Hero Section ── */}
       <div className={`dashboard-hero p-4 animate-in delay-1 ${loading && !!summary ? 'opacity-50' : ''}`}>
         <div className="hero-split items-start gap-6">
-          <div className="hero-left">
-            <div className="hero-kpi-grid">
-              <div className="hero-kpi-card">
-                <span className="hero-kpi-label">Total Contracts</span>
+          <div className="hero-left flex-1">
+            <div className="grid grid-cols-4 gap-4 items-stretch">
+              {/* --- Col 1-3: Primary Metrics (Wraps to 2 Rows) --- */}
+              <div className="hero-kpi-card h-full">
+                <span className="hero-kpi-label text-sm">Total Contracts</span>
                 <div className="hero-kpi-value-wrap">
-                  <span className="hero-kpi-value text-hero-blue">{(summary.total_count || 0).toLocaleString()}</span>
+                  <span className="hero-kpi-value text-hero-blue text-2xl">{(summary.total_count || 0).toLocaleString()}</span>
                   <div className="kpi-icon-wrap"><Database size={16} className="text-blue-400" /></div>
                 </div>
                 <span className="hero-kpi-chip">System Population</span>
               </div>
-              <div className="hero-kpi-card">
-                <span className="hero-kpi-label">Financial Variance</span>
+
+              <div className="hero-kpi-card h-full">
+                <span className="hero-kpi-label text-sm">Financial Variance</span>
                 <div className="hero-kpi-value-wrap">
-                  <span className="hero-kpi-value text-hero-red">₹{(summary.total_leakage || 0).toLocaleString()}</span>
+                  <span className="hero-kpi-value text-hero-red text-2xl">₹{(summary.total_leakage || 0).toLocaleString()}</span>
                   <div className="kpi-icon-wrap"><TrendingDown size={16} className="text-red-400" /></div>
                 </div>
                 <span className="hero-kpi-chip">Net Revenue Delta</span>
               </div>
-              <div className="hero-kpi-card">
-                <span className="hero-kpi-label">Avg Rev Impact</span>
+
+              <div className="hero-kpi-card h-full">
+                <span className="hero-kpi-label text-sm">Avg Rev Impact</span>
                 <div className="hero-kpi-value-wrap">
-                  <span className="hero-kpi-value text-hero-red" style={{ fontSize: '1.1rem' }}>
+                  <span className="hero-kpi-value text-hero-red text-xl">
                     ₹{((summary.total_leakage || 0) / (summary.total_count || 1)).toFixed(1)}
                   </span>
                   <div className="kpi-icon-wrap"><Activity size={14} className="text-red-400" /></div>
                 </div>
                 <span className="hero-kpi-chip">avg loss / contract</span>
               </div>
-              <div className="hero-kpi-card">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="hero-kpi-label">Underpaid</span>
-                  <span className="severity-badge severity-critical" style={{ width: 'fit-content', padding: '2px 8px' }}>Critical</span>
-                </div>
-                <div className="hero-kpi-value-wrap">
-                  <span className="hero-kpi-value text-hero-amber">{summary.underpaid || 0}</span>
-                  <div className="kpi-icon-wrap"><AlertCircle size={16} className="text-amber-400" /></div>
-                </div>
-                <span className="hero-kpi-chip">Leakage Count</span>
-              </div>
-              <div className="hero-kpi-card">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="hero-kpi-label">Overpaid</span>
-                  <span className="severity-badge severity-info" style={{ width: 'fit-content', padding: '2px 8px' }}>Audit Error</span>
-                </div>
-                <div className="hero-kpi-value-wrap">
-                  <span className="hero-kpi-value text-hero-blue">{summary.overpaid || 0}</span>
-                  <div className="kpi-icon-wrap"><TrendingUp size={16} className="text-blue-400" /></div>
-                </div>
-                <span className="hero-kpi-chip">Compliance Error</span>
-              </div>
-              <div className="hero-kpi-card">
-                <span className="hero-kpi-label">Clean Files</span>
-                <div className="hero-kpi-value-wrap">
-                  <span className="hero-kpi-value text-hero-green">{summary.clean || 0}</span>
-                  <div className="kpi-icon-wrap"><CheckCircle size={16} className="text-green-400" /></div>
-                </div>
-                <span className="hero-kpi-chip">Audit Confirmed</span>
-              </div>
-            </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-6 items-start">
+              {/* Sidebar Stack (Column 4 - Top) */}
               <div className="hero-kpi-card h-full justify-center">
-                <span className="hero-kpi-label">Compliance score</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="hero-kpi-label text-sm">Compliance Score</span>
+                  <span className="hero-kpi-chip m-0">Rating</span>
+                </div>
                 <div className="hero-kpi-value-wrap">
-                  <span className="hero-kpi-value" style={{ color: '#94a3b8' }}>
+                  <span className="hero-kpi-value text-slate-300 text-2xl">
                     {Math.round((summary.clean / summary.total_count) * 100)}%
                   </span>
                 </div>
-                <span className="hero-kpi-chip">Reliability Rating</span>
               </div>
-              
-              <div className="col-span-2 glass-legend-box p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-hero-muted-white" style={{ textTransform: 'uppercase', letterSpacing: '0.1rem', fontSize: '9px' }}>Region Risk Heat – Top 4 regions</span>
-                </div>
-                
-                <div style={{ height: 60, marginBottom: '8px' }}>
-                  <Bar data={regionRiskData} options={{
-                    indexAxis: 'y',
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { enabled: true } },
-                    scales: {
-                      x: { display: false },
-                      y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 9, weight: '600' } } }
-                    }
-                  }} />
-                </div>
 
-                <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2 border-t border-white/5" style={{ display: 'flex' }}>
-                  {['Mumbai', 'London', 'NY', 'Tokyo'].map(city => (
-                    <div key={city} className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#ef4444' }}></div>
-                      <span className="text-hero-pure-white" style={{ fontSize: '11px' }}>{city}</span>
+              {/* Row 2: Remaining Metrics */}
+              <div className="hero-kpi-card h-full">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="hero-kpi-label text-sm">Underpaid</span>
+                  <span className="severity-badge severity-critical" style={{ padding: '1px 6px', fontSize: '9px' }}>Critical</span>
+                </div>
+                <div className="hero-kpi-value-wrap">
+                  <span className="hero-kpi-value text-hero-amber text-2xl">{summary.underpaid || 0}</span>
+                  <div className="kpi-icon-wrap"><AlertCircle size={16} className="text-amber-400" /></div>
+                </div>
+              </div>
+
+              <div className="hero-kpi-card h-full">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="hero-kpi-label text-sm">Overpaid</span>
+                  <span className="severity-badge severity-info" style={{ padding: '1px 6px', fontSize: '9px' }}>Audit Error</span>
+                </div>
+                <div className="hero-kpi-value-wrap">
+                  <span className="hero-kpi-value text-hero-blue text-2xl">{summary.overpaid || 0}</span>
+                  <div className="kpi-icon-wrap"><TrendingUp size={16} className="text-blue-400" /></div>
+                </div>
+              </div>
+
+              <div className="hero-kpi-card h-full">
+                <span className="hero-kpi-label text-sm">Clean Files</span>
+                <div className="hero-kpi-value-wrap">
+                  <span className="hero-kpi-value text-hero-green text-2xl">{summary.clean || 0}</span>
+                  <div className="kpi-icon-wrap"><CheckCircle size={16} className="text-green-400" /></div>
+                </div>
+                <span className="hero-kpi-chip">Baseline Accuracy</span>
+              </div>
+
+              {/* Sidebar Stack (Column 4 - Bottom: Region Heat) */}
+              <div className="glass-legend-box p-3 h-full flex flex-col justify-center">
+                <span className="text-hero-muted-white text-[9px] uppercase tracking-widest block mb-2">Region Risk Heat – Top regions</span>
+                <div className="region-stack">
+                  {[
+                    { label: 'Mumbai', val: 85 },
+                    { label: 'London', val: 62 },
+                    { label: 'NY', val: 45 },
+                    { label: 'Tokyo', val: 28 }
+                  ].map(r => (
+                    <div key={r.label} className="region-bar-item">
+                      <span className="region-bar-label">{r.label}</span>
+                      <div className="region-bar-wrapper">
+                        <div className="region-bar-fill" style={{ width: `${r.val}%`, opacity: r.val / 100 }} />
+                      </div>
+                      <span className="region-bar-val">{r.val}</span>
                     </div>
                   ))}
                 </div>
@@ -417,13 +417,13 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="hero-right" style={{ flexDirection: 'column' }}>
-            <div className="flex items-center justify-between w-full h-full gap-8 overflow-visible">
-              <div className="flex-1 h-full cursor-pointer flex items-center overflow-visible">
+          <div className="hero-right w-[260px] flex flex-col items-center justify-center gap-4">
+            <div className="flex items-center justify-end w-full gap-6 overflow-visible">
+              <div className="w-[120px] h-[120px] cursor-pointer flex items-center overflow-visible">
                 <Doughnut ref={chartRef} data={categoryChartData} options={categoryOptions} onClick={onChartClick} />
               </div>
 
-              <div className="glass-legend-box">
+              <div className="glass-legend-box flex-1 min-w-0">
                 {catLabels.map((label, i) => {
                   const val = catMetrics[label]?.count || 0;
                   const total = catLabels.reduce((acc, curr) => acc + (catMetrics[curr]?.count || 0), 0);
@@ -436,7 +436,7 @@ export default function Dashboard() {
                       key={label}
                       className={`legend-item-v2 ${isActive ? 'active' : ''} ${isHidden ? 'legend-item-hidden' : ''}`}
                     >
-                      <div className="flex items-center gap-3 cursor-pointer group" onClick={(e) => {
+                      <div className="flex items-center gap-2 cursor-pointer group" style={{ minWidth: 0 }} onClick={(e) => {
                         e.stopPropagation();
                         setHiddenCategories(prev => {
                           const next = new Set(prev);
@@ -446,14 +446,14 @@ export default function Dashboard() {
                         });
                       }}>
                         <div 
-                          className="w-2.5 h-2.5 rounded-full transition-all" 
+                          className="w-2 h-2 rounded-full transition-all flex-shrink-0" 
                           style={{ backgroundColor: isHidden ? '#64748b' : catColors[i] }}
                         />
-                        <span className="text-hero-pure-white group-hover:text-white">
+                        <span className="text-hero-pure-white group-hover:text-white text-[10px] truncate">
                           {label}
                         </span>
                       </div>
-                      <span className="text-hero-muted-white text-[10px] pointer-events-none">
+                      <span className="text-hero-muted-white text-[9px] flex-shrink-0">
                         {pct}%
                       </span>
                     </div>
@@ -462,9 +462,9 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="hint-text-subtle" onClick={() => setCategoryFilter('')}>
+            <div className="hint-text-subtle mt-0 self-center" onClick={() => setCategoryFilter('')}>
               <MousePointer2 size={10} className="text-blue-400" />
-              <span>Drill-down active (click charts to filter)</span>
+              <span>Drill-down active</span>
             </div>
           </div>
         </div>
