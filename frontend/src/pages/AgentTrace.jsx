@@ -51,7 +51,10 @@ export default function AgentTrace() {
   }, [telemetry, agentLogs]);
 
   useEffect(() => {
-    api.get('/contracts').then(res => setContracts(res.data)).catch(console.error);
+    api.get('/contracts').then(res => {
+      const data = res.data.data || res.data || [];
+      setContracts(Array.isArray(data) ? data : []);
+    }).catch(console.error);
   }, []);
 
   const resetAudit = () => {
@@ -134,18 +137,19 @@ export default function AgentTrace() {
   };
 
   const getLogLvl = (msg) => {
-    msg = msg.toLowerCase();
-    if (msg.includes('error') || msg.includes('fail')) return 'lvl-error';
-    if (msg.includes('warn') || msg.includes('risk')) return 'lvl-warn';
-    if (msg.includes('success') || msg.includes('done') || msg.includes('complete')) return 'lvl-success';
+    if (!msg || typeof msg !== 'string') return 'lvl-info';
+    const low = msg.toLowerCase();
+    if (low.includes('error') || low.includes('fail')) return 'lvl-error';
+    if (low.includes('warn') || low.includes('risk')) return 'lvl-warn';
+    if (low.includes('success') || low.includes('done') || low.includes('complete')) return 'lvl-success';
     return 'lvl-info';
   };
 
   const currentViewAgent = focusedAgentId ? AGENTS.find(a => a.id === focusedAgentId) : (currentAgentIdx >= 0 ? AGENTS[currentAgentIdx] : null);
 
   const filteredContracts = contracts.filter(c => 
-    c.content_id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    c.studio.toLowerCase().includes(searchQuery.toLowerCase())
+    (c.content_id || '').toLowerCase().includes((searchQuery || '').toLowerCase()) || 
+    (c.studio || '').toLowerCase().includes((searchQuery || '').toLowerCase())
   );
 
   return (
