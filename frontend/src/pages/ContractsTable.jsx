@@ -47,63 +47,61 @@ const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, s
   );
 };
 
-/* ─── Drawer Component (High z-index, Dark Obsidian Theme + Overlay) ── */
-const RightDrawer = ({ isOpen, onClose, title, children, footer }) => {
+/* ─── Floating Contextual Flyout (Appears near the button) ─────────── */
+const FloatingPanel = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
   return (
     <>
-      {/* Overlay to catch clicks and close the drawer */}
-      <div 
-        className="fixed inset-0 z-[9998] bg-black/5 backdrop-blur-[1px] transition-opacity animate-in fade-in"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-[100] bg-transparent" onClick={onClose} />
       
       <div 
-          className="fixed z-[9999] flex justify-end overflow-visible pointer-events-none" 
-          style={{ right: 0, top: 0, bottom: 0 }}
+          className="fixed z-[101] flex flex-col bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[24px]" 
+          style={{ 
+              width: '420px', 
+              top: '80px',
+              right: '24px',
+              maxHeight: 'calc(100vh - 120px)',
+              border: '1px solid #f1f5f9',
+              animation: 'panelPopOut 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards'
+          }}
       >
-          <div 
-              className="h-full bg-slate-900 flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.4)] pointer-events-auto" 
-              style={{ 
-                  width: '380px', 
-                  borderLeft: '1px solid #1e293b',
-                  animation: 'drawerSlideIn 0.35s cubic-bezier(0,0,0.2,1) forwards'
-              }}
-          >
-              <div className="p-5 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md flex items-center justify-between sticky top-0 z-10">
-                  <div>
-                      <h2 className="text-base font-bold text-white leading-tight">{title}</h2>
-                      <p className="text-[9px] text-blue-400 uppercase tracking-widest mt-0.5 font-bold">Secure Ingestion Pipeline</p>
-                  </div>
-                  <button className="icon-btn text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" onClick={onClose}>
-                      <X size={18} />
-                  </button>
-              </div>
-              
-              <div className="flex-1 overflow-y-auto custom-scrollbar-dark p-5 bg-slate-900">
-                  {children}
-              </div>
+          <div className="flex h-full">
+            {/* Left Brand Strip */}
+            <div className="w-[120px] bg-slate-50 rounded-l-[24px] p-6 border-r border-slate-100 flex flex-col justify-end">
+                <h3 className="text-lg font-black text-slate-800 leading-[1.1]">Import Workspace</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Secure Ingestion Pipeline</p>
+            </div>
 
-              {footer && (
-                  <div className="p-5 border-t border-slate-800 bg-slate-900 flex gap-3 sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.2)]">
-                      {footer}
-                  </div>
-              )}
+            {/* Right Logic Area */}
+            <div className="flex-1 flex flex-col min-w-0">
+                <div className="p-6 flex-1 overflow-y-auto custom-scrollbar-minimal">
+                    {children}
+                </div>
+
+                {footer && (
+                    <div className="p-4 bg-slate-50 rounded-br-[24px] flex gap-2 border-t border-slate-100">
+                        {footer}
+                    </div>
+                )}
+            </div>
           </div>
+
+          <button 
+            className="absolute -left-3 top-6 w-7 h-7 bg-white shadow-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 transition-all border border-slate-100"
+            onClick={onClose}
+          >
+            <X size={14} />
+          </button>
       </div>
+
       <style>{`
-          @keyframes drawerSlideIn {
-              from { transform: translateX(100%); }
-              to { transform: translateX(0); }
+          @keyframes panelPopOut {
+              from { opacity: 0; transform: translateX(30px) scale(0.95); }
+              to { opacity: 1; transform: translateX(0) scale(1); }
           }
-          .custom-scrollbar-dark::-webkit-scrollbar { width: 3px; }
-          .custom-scrollbar-dark::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-          .custom-scrollbar-dark::-webkit-scrollbar-track { background: transparent; }
-          .animate-in { animation: fadeIn 0.4s ease-out forwards; }
-          @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-          .fade-in { animation: overlayFadeIn 0.3s ease-out forwards; }
-          @keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
-          .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+          .custom-scrollbar-minimal::-webkit-scrollbar { width: 4px; }
+          .custom-scrollbar-minimal::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+          .custom-scrollbar-minimal::-webkit-scrollbar-track { background: transparent; }
       `}</style>
     </>
   );
@@ -407,114 +405,109 @@ export default function ContractsTable() {
         </div>
       )}
 
-      <RightDrawer
+      <FloatingPanel
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
-        title={uploadStep === 'preview' ? "Inbound Verify" : "Import Workspace"}
+        title="Inbound Verify"
         footer={
             uploadStep === 'preview' ? (
                 <>
-                    <button className="btn w-full bg-slate-800 text-slate-400 border-none hover:bg-slate-700 font-bold py-2 text-[10px]" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>RESET</button>
-                    <button className="btn btn-blue w-full font-bold py-2 text-[10px]" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
+                    <button className="btn flex-1 bg-slate-100 text-slate-500 hover:bg-slate-200 font-bold py-2 text-[10px]" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>RESET</button>
+                    <button className="btn btn-blue flex-1 font-bold py-2 text-[10px]" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
                         {isUploading ? 'INGESTING...' : 'COMMIT INGESTION'}
                     </button>
                 </>
             ) : null
         }
       >
-        <div className="space-y-6 pb-2">
-            {/* Step 1: Upload (Drag & Drop Card) */}
+        <div className="space-y-6">
+            {/* 01. Source Gateway */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in">
-                    <h4 className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">01. Source Gateway</h4>
-                    <div className="border border-dashed border-slate-800 rounded-2xl p-6 text-center hover:border-blue-500/50 hover:bg-blue-500/[0.02] transition-all cursor-pointer group"
+                    <h4 className="text-[13px] font-black text-slate-900 mb-1">01. Source Gateway</h4>
+                    <div className="border border-dashed border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition-all cursor-pointer group"
                          onClick={() => document.getElementById('drawer-input-final').click()}>
-                        <div className="w-12 h-12 bg-slate-800/50 text-slate-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:text-blue-400 transition-all">
-                            <Upload size={20} />
-                        </div>
-                        <p className="text-[10px] font-bold text-slate-300">Drop files to ingest</p>
-                        <p className="text-[8px] text-slate-600 mt-1 uppercase tracking-tighter">Support: CSV / Text-PDF</p>
+                        <Upload size={18} className="mx-auto mb-2 text-slate-400 group-hover:text-blue-500" />
+                        <p className="text-[11px] font-bold text-slate-800">Drop files to ingest</p>
+                        <p className="text-[9px] text-slate-400">Support: CSV / Text-PDF</p>
                     </div>
                 </div>
             )}
 
-            {/* Step 2: Browse File & Download Template */}
+            {/* Local Disk Section */}
             {uploadStep !== 'preview' && (
-                <div className="grid grid-cols-2 gap-3 animate-in" style={{ animationDelay: '0.1s' }}>
-                    <div>
-                        <h4 className="text-[8px] font-bold text-slate-600 uppercase mb-2">Local Disk</h4>
-                        <input type="file" id="drawer-input-final" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} />
-                        <button className="w-full bg-slate-800/50 text-slate-400 border border-slate-800 py-2.5 rounded-xl text-[9px] font-bold hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center gap-2" onClick={() => document.getElementById('drawer-input-final').click()}>
-                            Browse
-                        </button>
-                    </div>
-                    <div>
-                        <h4 className="text-[8px] font-bold text-slate-600 uppercase mb-2">Resources</h4>
-                        <button className="w-full bg-slate-800/50 text-slate-400 border border-slate-800 py-2.5 rounded-xl text-[9px] font-bold hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center gap-2" onClick={handleDownloadSample}>
-                            Template
-                        </button>
-                    </div>
+                <div className="animate-in" style={{ animationDelay: '0.1s' }}>
+                    <h4 className="text-[11px] font-black text-slate-900 mb-2">Local Disk</h4>
+                    <input type="file" id="drawer-input-final" accept=".csv,.pdf" className="text-[10px] w-full file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-all" onChange={handleFileSelect} />
+                    <button className="w-full mt-3 bg-slate-50 text-slate-800 border border-slate-200 py-2 rounded-lg text-[10px] font-bold hover:bg-slate-100 transition-all" onClick={() => document.getElementById('drawer-input-final').click()}>
+                        Browse
+                    </button>
                 </div>
             )}
 
-            {/* Step 3: Format Guide */}
+            {/* Resources Section */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in" style={{ animationDelay: '0.2s' }}>
-                    <h4 className="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-3">03. Ingestion Schema</h4>
-                    <div className="bg-black/30 rounded-xl p-4 border border-slate-800/50">
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center pb-2 border-b border-slate-900">
-                                <code className="text-blue-500/80 text-[10px] font-bold">contract_id*</code>
-                                <span className="text-slate-700 text-[8px] font-mono tracking-tighter uppercase">Primary PKey</span>
-                            </div>
-                            <div className="flex justify-between items-center pb-2 border-b border-slate-900">
-                                <code className="text-blue-500/80 text-[10px] font-bold">content_id*</code>
-                                <span className="text-slate-700 text-[8px] font-mono tracking-tighter uppercase">Asset Mapping</span>
+                    <h4 className="text-[11px] font-black text-slate-900 mb-2">Resources</h4>
+                    <button className="w-full bg-slate-50 text-slate-800 border border-slate-200 py-2 rounded-lg text-[10px] font-bold hover:bg-slate-100 transition-all" onClick={handleDownloadSample}>
+                        Template
+                    </button>
+                </div>
+            )}
+
+            {/* 03. Ingestion Schema */}
+            {uploadStep !== 'preview' && (
+                <div className="animate-in" style={{ animationDelay: '0.3s' }}>
+                    <h4 className="text-[13px] font-black text-slate-900 mb-2">03. Ingestion Schema</h4>
+                    <div className="bg-slate-50/50 rounded-xl p-3 border border-slate-100">
+                        <div className="space-y-1">
+                            <div className="flex justify-between items-center">
+                                <code className="text-slate-800 text-[11px] font-bold font-mono">contract_id*</code>
+                                <span className="text-slate-400 text-[10px]">Primary PKey</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <code className="text-slate-400 text-[10px]">studio</code>
-                                <span className="text-slate-700 text-[8px] font-mono tracking-tighter uppercase">Optional Label</span>
+                                <code className="text-slate-800 text-[11px] font-bold font-mono">content_id*</code>
+                                <span className="text-slate-400 text-[10px]">Asset Mapping</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <code className="text-slate-400 text-[11px] font-mono">studio</code>
+                                <span className="text-slate-400 text-[10px]">Optional Label</span>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Section D: Preview Results */}
+            {/* Preview Results */}
             {uploadStep === 'preview' && (
                 <div className="animate-in">
                     {errors.length > 0 && (
-                        <div className="bg-red-950/40 p-4 rounded-2xl border border-red-900/50 mb-6 shadow-xl">
-                            <div className="flex items-center gap-2 text-red-400 text-[11px] font-bold mb-3">
+                        <div className="bg-red-50 p-3 rounded-lg border border-red-100 mb-4">
+                            <div className="flex items-center gap-2 text-red-600 text-[10px] font-bold mb-1">
                                 <AlertCircle size={14} />
-                                <span>Batch Validation Failures</span>
+                                <span>Validation Issues</span>
                             </div>
-                            <ul className="text-[9px] text-red-500 list-disc pl-5 space-y-1.5 font-medium">
-                                {errors.slice(0, 5).map((e, i) => <li key={i}>{e}</li>)}
+                            <ul className="text-[9px] text-red-500 list-disc pl-4 space-y-1">
+                                {errors.slice(0, 3).map((e, i) => <li key={i}>{e}</li>)}
                             </ul>
                         </div>
                     )}
-
-                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
-                        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">D. Data Lineage Trace</h4>
-                        <span className="text-[9px] font-bold text-blue-400 bg-blue-900/20 px-2 py-0.5 rounded-full border border-blue-800/30">{previewData.length} detected</span>
-                    </div>
-
-                    <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar-dark">
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase mb-3">Ingestion Preview</h4>
+                    <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar-minimal">
                         {previewData.map((p, i) => (
-                            <div key={i} className={`p-3 rounded-xl border flex items-center justify-between transition-all group ${!p.contract_id ? 'border-red-900/50 bg-red-950/20' : 'border-slate-800/50 bg-black/30 hover:border-blue-900/50 hover:bg-blue-950/10'}`}>
+                            <div key={i} className={`p-2 rounded border flex items-center justify-between ${!p.contract_id ? 'border-red-100 bg-red-50' : 'border-slate-100 bg-slate-50'}`}>
                                 <div className="min-w-0">
-                                    <div className={`text-[10px] font-bold truncate ${!p.contract_id ? 'text-red-400' : 'text-slate-200'}`}>{p.contract_id || 'UID_NULL'}</div>
-                                    <div className="text-[8px] text-slate-500 truncate tracking-tight">{p.studio} • {p.content_id}</div>
+                                    <div className="text-[10px] font-bold text-slate-800 truncate">{p.contract_id || 'UID_NULL'}</div>
+                                    <div className="text-[8px] text-slate-400 truncate">{p.studio}</div>
                                 </div>
-                                <span className="text-[8px] font-bold text-slate-500 px-1.5 py-0.5 bg-slate-900 rounded border border-slate-800 flex-shrink-0 ml-2 group-hover:border-blue-800 group-hover:text-blue-400 transition-colors">{p.territory}</span>
+                                <span className="text-[8px] font-bold text-slate-400">{p.territory}</span>
                             </div>
                         ))}
                     </div>
                 </div>
             )}
         </div>
-      </RightDrawer>
+      </FloatingPanel>
 
       {/* ─── Delete Confirmation Modal ─── */}
       <DeleteModal 
