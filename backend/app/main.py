@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 import os
 
-from app.routes import payments, audit, contracts, logs, analytics, violations, pdf_contract, exports
+from app.routes import payments, audit, contracts, logs, analytics, violations, pdf_contract, exports, admin
 
 IS_VERCEL = os.getenv("VERCEL") == "1"
 app = FastAPI(
@@ -28,6 +28,7 @@ app.include_router(analytics.router)
 app.include_router(violations.router)
 app.include_router(pdf_contract.router)
 app.include_router(exports.router)
+app.include_router(admin.router)
 
 @app.get("/health")
 def health_check():

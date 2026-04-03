@@ -1,0 +1,115 @@
+import os
+import sys
+import random
+from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
+
+# Add current directory to path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from app.db import SessionLocal, engine
+from app.models.schema import Base, Contract, Log, Payment, AuditResult
+from app.services.audit_service import AuditService
+import asyncio
+
+def random_date(start, end):
+    return start + timedelta(days=random.randint(0, int((end - start).days)))
+
+async def perform_dataset_reset(db: Session):
+    """
+    Core logic to purge and re-seed 1000/5000/13000 dataset.
+    Can be called from a script or a FastAPI route.
+    """
+    print("--- 1. Purging existing dataset ---")
+    try:
+        db.query(Log).delete()
+        db.query(Payment).delete()
+        db.query(AuditResult).delete()
+        db.query(Contract).delete()
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise e
+
+    territories = ['US', 'IN', 'UK', 'CA', 'DE', 'JP', 'BR', 'AU', 'FR']
+    studios = ['StudioA', 'StudioB', 'StudioC', 'StudioD']
+    categories = ['Movie', 'Song', 'Podcast', 'Audiobook', 'Series']
+    
+    start_of_2023 = datetime(2023, 1, 1)
+    end_of_2026 = datetime(2026, 12, 31)
+
+    # 2. SEED CONTRACTS (1,000)
+    print("--- 2. Generating 1,000 Contracts ---")
+    contracts = []
+    for i in range(1, 1001):
+        c_id = f"C{i:04d}"
+        category = random.choice(categories)
+        content_id = f"{category}_{random.randint(100, 999)}"
+        c = Contract(
+            contract_id=c_id,
+            content_id=content_id,
+            studio=random.choice(studios),
+            royalty_rate=round(random.uniform(5.0, 15.0), 2),
+            rate_per_play=round(random.uniform(0.01, 0.05), 4),
+            tier_rate=round(random.uniform(0.05, 0.1), 4),
+            tier_threshold=random.randint(500, 2000),
+            territory=random.choice(territories),
+            start_date=random_date(start_of_2023, datetime(2024, 12, 31)).strftime("%Y-%m-%d"),
+            end_date=random_date(datetime(2026, 1, 1), end_of_2026).strftime("%Y-%m-%d"),
+            is_deleted=0
+        )
+        db.add(c)
+        contracts.append(c)
+    db.commit()
+
+    # 3. SEED PAYMENTS (5,000)
+    print("--- 3. Generating 5,000 Payments (₹5 - ₹100) ---")
+    for i in range(1, 5001):
+        target_c = random.choice(contracts)
+        p = Payment(
+            payment_id=f"PM{i:05d}",
+            contract_id=target_c.contract_id,
+            content_id=target_c.content_id,
+            amount_paid=round(random.uniform(5.0, 100.0), 2),
+            payment_date=random_date(start_of_2023, datetime.now()).strftime("%Y-%m-%d")
+        )
+        db.add(p)
+    db.commit()
+
+    # 4. SEED LOGS (13,000)
+    print("--- 4. Generating 13,000 Streaming Logs ---")
+    for i in range(1, 13001):
+        target_c = random.choice(contracts)
+        l = Log(
+            play_id=f"L{i:06d}",
+            contract_id=target_c.contract_id,
+            content_id=target_c.content_id,
+            timestamp=random_date(start_of_2023, datetime.now()).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            country=random.choice(territories),
+            plays=random.randint(1, 500),
+            user_type=random.choice(['free', 'premium']),
+            device=random.choice(['mobile', 'web', 'tv'])
+        )
+        db.add(l)
+        if i % 3000 == 0:
+            db.commit()
+    db.commit()
+
+    # 5. AUDIT PULSE
+    print("--- 5. Initializing Audit Results ---")
+    audit_service = AuditService()
+    await audit_service.run_audit(db)
+    db.commit()
+    
+    return {
+        "contracts": 1000,
+        "payments": 5000,
+        "logs": 13000,
+        "status": "success"
+    }
+
+if __name__ == "__main__":
+    db = SessionLocal()
+    asyncio.run(perform_dataset_reset(db))
+    db.close()
+    print("Reset Complete.")
