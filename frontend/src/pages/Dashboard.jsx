@@ -140,13 +140,10 @@ export default function Dashboard() {
     }]
   };
 
-  const overpaidTotal  = audits.filter(a => a.status === 'OVERPAID').reduce((s, r) => s + (Math.abs(r.difference || 0)), 0);
-  const underpaidTotal = audits.filter(a => a.status === 'UNDERPAID').reduce((s, r) => s + (Math.abs(r.difference || 0)), 0);
-  
   const overUnderData = {
     labels: ['Overpaid', 'Underpaid'],
     datasets: [{ 
-      data: [overpaidTotal, underpaidTotal],
+      data: [summary.overpaid_sum || 0, summary.underpaid_sum || 0],
       backgroundColor: ['#10b981','#ef4444'],
       hoverBackgroundColor: ['#059669','#dc2626'],
       borderWidth: 0 
@@ -236,15 +233,15 @@ export default function Dashboard() {
   };
 
   const recentAlerts = audits
-    .filter(a => a.status !== 'CLEAN')
+    .filter(a => a.status !== 'OK' && Math.abs(a.difference) > 0)
     .sort((a, b) => b.id - a.id)
     .slice(0, 5);
 
   const trendData = {
-    labels: ['26 Mar', '27 Mar', '28 Mar', '29 Mar', '30 Mar', '31 Mar', '1 Apr'],
+    labels: summary.trend?.labels || ['26 Mar', '27 Mar', '28 Mar', '29 Mar', '30 Mar', '31 Mar', '1 Apr'],
     datasets: [{
       label: 'Variance Trend',
-      data: [1200, 1900, 1500, 2400, 2100, 1800, summary.total_leakage || 2000],
+      data: summary.trend?.values || [1200, 1900, 1500, 2400, 2100, 1800, summary.total_leakage || 2000],
       borderColor: '#3b82f6',
       backgroundColor: 'rgba(59, 130, 240, 0.1)',
       fill: true,
@@ -376,9 +373,9 @@ export default function Dashboard() {
           </div>
           
           <div className="hero-right">
-             <div style={{ height: '100%', width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <div style={{ height: '100%', width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                 <Doughnut ref={chartRef} data={categoryChartData} options={categoryOptions} onClick={onChartClick} />
-             </div>
+            </div>
           </div>
         </div>
       </div>
@@ -393,8 +390,8 @@ export default function Dashboard() {
           
           <div className="alert-header-row">
             <span>Contract</span>
-            <span>Content Name</span>
-            <span>Amount</span>
+            <span>Content ID</span>
+            <span>Amt Variance</span>
             <span>Audited</span>
             <span className="text-center">Severity</span>
           </div>
@@ -402,10 +399,10 @@ export default function Dashboard() {
           <div className="alert-feed">
             {recentAlerts.length > 0 ? recentAlerts.map(alert => (
               <div key={alert.id} className="alert-item">
-                <span className="alert-id">#{String(alert.contract_id || alert.id).padStart(4, '0')}</span>
-                <span className="alert-name truncate" title={alert.content_name}>{alert.content_name}</span>
-                <span className="alert-amount">₹{(alert.amount || 0).toLocaleString()}</span>
-                <span className="alert-date">{alert.date_audited || 'Today'}</span>
+                <span className="alert-id">#{alert.contract_id}</span>
+                <span className="alert-name truncate" title={alert.content_id}>{alert.content_id}</span>
+                <span className="alert-amount">₹{Math.abs(alert.difference || 0).toLocaleString()}</span>
+                <span className="alert-date">{formatDate(alert.timestamp)}</span>
                 <span className={`severity-badge ${alert.status === 'UNDERPAID' ? 'severity-critical' : 'severity-warning'}`}>
                   {alert.status}
                 </span>
