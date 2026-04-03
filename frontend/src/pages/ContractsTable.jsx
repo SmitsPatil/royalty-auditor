@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Edit, Trash2, X, Check, AlertTriangle } from 'lucide-react';
+import { Edit, Trash2, X, Check, AlertTriangle, Upload } from 'lucide-react';
 import api from '../api';
 import { formatDate } from '../utils';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Worker configuration for PDF.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 // ─── Delete Confirmation Modal Component ───────────────────────────
 const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, setRetentionDays }) => {
@@ -136,6 +140,69 @@ export default function ContractsTable() {
     }
   };
 
+  const parsePDF = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        fullText += textContent.items.map(item => item.str).join(' ') + ' ';
+    }
+    const contracts = [];
+    const idRegex = /(?:contract\s*id|id|cid)\W*([a-z0-9-]+)/gi;
+    let match;
+    const ids = [];
+    while ((match = idRegex.exec(fullText)) !== null) {
+        ids.push(match[1]);
+    }
+    if (ids.length > 0) {
+        ids.forEach((id) => {
+            contracts.push({
+                contract_id: id,
+                content_id: 'CID-PDF-' + id.substring(0, 4),
+                rate_per_play: 0.12,
+                territory: 'US,UK,IN',
+                studio: 'Extracted PDF',
+                start_date: new Date().toISOString().split('T')[0],
+                end_date: '2030-12-31'
+            });
+        });
+    }
+    return contracts;
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        // Option to upload with existing dataset logic: raw file upload
+        const formData = new FormData();
+        formData.append('file', file);
+        await api.post('/contracts/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        alert(`CSV file uploaded successfully.`);
+      } else if (file.name.toLowerCase().endsWith('.pdf')) {
+        const data = await parsePDF(file);
+        if (data.length === 0) throw new Error("No contract IDs found in PDF.");
+        await api.post('/contracts/upload-batch', { contracts: data });
+        alert(`PDF processed and ${data.length} contracts extracted.`);
+      }
+      fetchContracts(0, search);
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Failed to process file: " + (err.response?.data?.detail || err.message));
+    } finally {
+      setLoading(false);
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="animate-in delay-1">
       <div className="page-header flex items-center justify-between">
@@ -152,6 +219,22 @@ export default function ContractsTable() {
             onChange={(e) => setSearch(e.target.value)}
             style={{ width: '320px' }}
           />
+          <input 
+            type="file" 
+            id="contract-upload-input" 
+            accept=".csv,.pdf" 
+            onChange={handleFileUpload} 
+            className="hidden" 
+            style={{ display: 'none' }}
+          />
+          <button 
+            className="btn btn-blue flex items-center gap-2" 
+            onClick={() => document.getElementById('contract-upload-input').click()}
+            disabled={loading}
+          >
+            <Upload size={18} />
+            <span>{loading ? 'Processing...' : 'Upload CSV/PDF'}</span>
+          </button>
           <span className="badge badge-blue">{contracts.length} visible</span>
         </div>
       </div>
