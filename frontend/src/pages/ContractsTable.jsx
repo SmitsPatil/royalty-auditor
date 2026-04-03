@@ -49,6 +49,18 @@ const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, s
 
 /* ─── Inbound Verify Drawer (Right-Side, Full Height) ─────────────── */
 const RightIngestionDrawer = ({ isOpen, onClose, title, children, footer }) => {
+  const [active, setActive] = useState(false);
+
+  // Entrance animation trigger
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => setActive(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setActive(false);
+    }
+  }, [isOpen]);
+
   // Disable background scroll when drawer is active
   useEffect(() => {
     if (isOpen) {
@@ -67,9 +79,9 @@ const RightIngestionDrawer = ({ isOpen, onClose, title, children, footer }) => {
           position: 'fixed', inset: 0, 
           zIndex: 9998, background: 'rgba(0,0,0,0.5)', 
           backdropFilter: 'blur(4px)',
-          opacity: isOpen ? 1 : 0, 
-          pointerEvents: isOpen ? 'auto' : 'none',
-          transition: 'all 0.3s ease'
+          opacity: active ? 1 : 0, 
+          pointerEvents: active ? 'auto' : 'none',
+          transition: 'opacity 0.3s ease'
         }}
         onClick={onClose}
       />
@@ -85,8 +97,10 @@ const RightIngestionDrawer = ({ isOpen, onClose, title, children, footer }) => {
               display: 'flex', flexDirection: 'column',
               zIndex: 9999, 
               overflowY: 'auto',
-              transition: 'transform 0.3s ease',
-              transform: isOpen ? 'translateX(0)' : 'translateX(100%)'
+              opacity: active ? 1 : 0,
+              pointerEvents: active ? 'auto' : 'none',
+              transition: 'transform 0.3s ease, opacity 0.3s ease',
+              transform: active ? 'translateX(0)' : 'translateX(100%)'
           }}
           onClick={e => e.stopPropagation()}
       >
@@ -360,7 +374,7 @@ export default function ContractsTable() {
   };
 
   return (
-    <div className="animate-in delay-1 overflow-visible">
+    <div className="animate-in delay-1 overflow-visible" style={{ overflowX: 'hidden' }}>
       {/* ─── Page Header ─── */}
       <div className="page-header flex items-center justify-between">
         <div>
@@ -466,153 +480,155 @@ export default function ContractsTable() {
           <button className="btn btn-outline" onClick={loadMore}>Load More Contracts</button>
         </div>
       )}
+      
+      {isUploadModalOpen && (
+        <RightIngestionDrawer
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          title={uploadStep === 'preview' ? "Verify Ingestion" : "Inbound Verify"}
+          footer={
+              uploadStep === 'preview' ? (
+                  <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                      <button 
+                          style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '10px', color: '#cbd5e1', fontSize: '12px', fontWeight: '800', cursor: 'pointer', textTransform: 'uppercase' }}
+                          onClick={() => { setUploadStep('select'); setPreviewData([]); setUploadingFile(null); }}
+                      >
+                          Reset
+                      </button>
+                      <button 
+                          style={{ flex: 1.5, padding: '12px', background: '#3b82f6', border: 'none', borderRadius: '10px', color: 'white', fontSize: '12px', fontWeight: '800', cursor: 'pointer', textTransform: 'uppercase', opacity: (errors.length > 0 || isUploading) ? 0.5 : 1 }}
+                          disabled={errors.length > 0 || isUploading}
+                          onClick={confirmUpload}
+                      >
+                          {isUploading ? 'Committing...' : 'Commit Batch'}
+                      </button>
+                  </div>
+              ) : null
+          }
+        >
+          {/* Dynamic Feedback Area (In-Flight Status) */}
+          {uploadStep === 'select' && uploadStatus !== 'idle' && (
+              <div style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '32px', height: '32px', background: '#3b82f6', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                              <Check size={16} />
+                          </div>
+                          <div>
+                              <p style={{ fontSize: '13px', fontWeight: '800', color: 'white', margin: 0 }}>{uploadingFile?.name}</p>
+                              <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>{uploadingFile?.size} • Analyzing schema...</p>
+                          </div>
+                      </div>
+                  </div>
+                  <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#3b82f6', transition: 'width 0.3s ease' }} />
+                  </div>
+              </div>
+          )}
 
-      <RightIngestionDrawer
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        title={uploadStep === 'preview' ? "Verify Ingestion" : "Inbound Verify"}
-        footer={
-            uploadStep === 'preview' ? (
-                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-                    <button 
-                        style={{ flex: 1, padding: '12px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '10px', color: '#cbd5e1', fontSize: '12px', fontWeight: '800', cursor: 'pointer', textTransform: 'uppercase' }}
-                        onClick={() => { setUploadStep('select'); setPreviewData([]); setUploadingFile(null); }}
-                    >
-                        Reset
-                    </button>
-                    <button 
-                        style={{ flex: 1.5, padding: '12px', background: '#3b82f6', border: 'none', borderRadius: '10px', color: 'white', fontSize: '12px', fontWeight: '800', cursor: 'pointer', textTransform: 'uppercase', opacity: (errors.length > 0 || isUploading) ? 0.5 : 1 }}
-                        disabled={errors.length > 0 || isUploading}
-                        onClick={confirmUpload}
-                    >
-                        {isUploading ? 'Committing...' : 'Commit Batch'}
-                    </button>
-                </div>
-            ) : null
-        }
-      >
-        {/* Dynamic Feedback Area (In-Flight Status) */}
-        {uploadStep === 'select' && uploadStatus !== 'idle' && (
-            <div style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '32px', height: '32px', background: '#3b82f6', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                            <Check size={16} />
-                        </div>
-                        <div>
-                            <p style={{ fontSize: '13px', fontWeight: '800', color: 'white', margin: 0 }}>{uploadingFile?.name}</p>
-                            <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>{uploadingFile?.size} • Analyzing schema...</p>
-                        </div>
-                    </div>
-                </div>
-                <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                    <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#3b82f6', transition: 'width 0.3s ease' }} />
-                </div>
-            </div>
-        )}
+          {/* Home View: Horizontal Compact Layout */}
+          {uploadStep === 'select' && uploadStatus === 'idle' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {/* 01. Full Width Gateway */}
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '14px' }}>01. Primary Gateway</h4>
+                      <div 
+                          style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '14px', padding: '40px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s', background: 'rgba(255,255,255,0.02)' }}
+                          onClick={() => document.getElementById('final-upload-input').click()}
+                          onMouseOver={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)'; }}
+                          onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                      >
+                          <Upload size={28} style={{ color: '#60a5fa', marginBottom: '16px' }} />
+                          <p style={{ fontSize: '14px', fontWeight: '800', color: 'white', margin: 0 }}>Ingest Contract Bundle</p>
+                          <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '8px' }}>XLSX / CSV / PDF Text Extract</p>
+                      </div>
+                  </div>
 
-        {/* Home View: Horizontal Compact Layout */}
-        {uploadStep === 'select' && uploadStatus === 'idle' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                {/* 01. Full Width Gateway */}
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '14px' }}>01. Primary Gateway</h4>
-                    <div 
-                        style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '14px', padding: '40px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s', background: 'rgba(255,255,255,0.02)' }}
-                        onClick={() => document.getElementById('final-upload-input').click()}
-                        onMouseOver={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)'; }}
-                        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
-                    >
-                        <Upload size={28} style={{ color: '#60a5fa', marginBottom: '16px' }} />
-                        <p style={{ fontSize: '14px', fontWeight: '800', color: 'white', margin: 0 }}>Ingest Contract Bundle</p>
-                        <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '8px' }}>XLSX / CSV / PDF Text Extract</p>
-                    </div>
-                </div>
+                  {/* Horizontal Split: Disk & Template */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <label style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>Local Storage</label>
+                          <input type="file" id="final-upload-input" accept=".csv,.pdf" style={{ display: 'none' }} onChange={handleFileSelect} />
+                          <button 
+                              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '12px', borderRadius: '10px', color: 'white', fontSize: '12px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
+                              onClick={() => document.getElementById('final-upload-input').click()}
+                              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                          >
+                              Browse File
+                          </button>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <label style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>Resources</label>
+                          <button 
+                              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '12px', borderRadius: '10px', color: 'white', fontSize: '12px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
+                              onClick={handleDownloadSample}
+                              onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                          >
+                              Template
+                          </button>
+                      </div>
+                  </div>
 
-                {/* Horizontal Split: Disk & Template */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>Local Storage</label>
-                        <input type="file" id="final-upload-input" accept=".csv,.pdf" style={{ display: 'none' }} onChange={handleFileSelect} />
-                        <button 
-                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '12px', borderRadius: '10px', color: 'white', fontSize: '12px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
-                            onClick={() => document.getElementById('final-upload-input').click()}
-                            onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                            onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                        >
-                            Browse File
-                        </button>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>Resources</label>
-                        <button 
-                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '12px', borderRadius: '10px', color: 'white', fontSize: '12px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
-                            onClick={handleDownloadSample}
-                            onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                            onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                        >
-                            Template
-                        </button>
-                    </div>
-                </div>
+                  {/* 03. Format Guide (Brighter / Tighter) */}
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Schema Integrity</label>
+                      <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '10px' }}>
+                                  <code style={{ color: '#60a5fa', fontSize: '13px', fontWeight: '800' }}>contract_id*</code>
+                                  <span style={{ color: '#cbd5e1', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase' }}>Unique PKey</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '10px' }}>
+                                  <code style={{ color: '#60a5fa', fontSize: '13px', fontWeight: '800' }}>content_id*</code>
+                                  <span style={{ color: '#cbd5e1', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase' }}>Asset Link</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                  <code style={{ color: '#94a3b8', fontSize: '13px' }}>studio</code>
+                                  <span style={{ color: '#64748b', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase' }}>Meta Label</span>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          )}
 
-                {/* 03. Format Guide (Brighter / Tighter) */}
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '800', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Schema Integrity</label>
-                    <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '10px' }}>
-                                <code style={{ color: '#60a5fa', fontSize: '13px', fontWeight: '800' }}>contract_id*</code>
-                                <span style={{ color: '#cbd5e1', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase' }}>Unique PKey</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '10px' }}>
-                                <code style={{ color: '#60a5fa', fontSize: '13px', fontWeight: '800' }}>content_id*</code>
-                                <span style={{ color: '#cbd5e1', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase' }}>Asset Link</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <code style={{ color: '#94a3b8', fontSize: '13px' }}>studio</code>
-                                <span style={{ color: '#64748b', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase' }}>Meta Label</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
+          {/* Preview View: Space Efficient */}
+          {uploadStep === 'preview' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {errors.length > 0 && (
+                      <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '14px', padding: '18px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#f87171', fontSize: '13px', fontWeight: '900', marginBottom: '10px' }}>
+                              <AlertCircle size={18} />
+                              <span style={{ letterSpacing: '0.05em' }}>BATCH VALIDATION FAILED</span>
+                          </div>
+                          <ul style={{ paddingLeft: '18px', color: '#fca5a5', fontSize: '11px', gap: '6px', display: 'flex', flexDirection: 'column', fontWeight: '500' }}>
+                              {errors.slice(0, 4).map((e, i) => <li key={i}>{e}</li>)}
+                          </ul>
+                      </div>
+                  )}
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h4 style={{ fontSize: '16px', fontWeight: '900', color: 'white', margin: 0 }}>Lineage Preview</h4>
+                      <span style={{ fontSize: '10px', background: '#3b82f6', color: 'white', padding: '4px 10px', borderRadius: '6px', fontWeight: '900', letterSpacing: '0.05em' }}>{previewData.length} DETECTED</span>
+                  </div>
 
-        {/* Preview View: Space Efficient */}
-        {uploadStep === 'preview' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                {errors.length > 0 && (
-                    <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '14px', padding: '18px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#f87171', fontSize: '13px', fontWeight: '900', marginBottom: '10px' }}>
-                            <AlertCircle size={18} />
-                            <span style={{ letterSpacing: '0.05em' }}>BATCH VALIDATION FAILED</span>
-                        </div>
-                        <ul style={{ paddingLeft: '18px', color: '#fca5a5', fontSize: '11px', gap: '6px', display: 'flex', flexDirection: 'column', fontWeight: '500' }}>
-                            {errors.slice(0, 4).map((e, i) => <li key={i}>{e}</li>)}
-                        </ul>
-                    </div>
-                )}
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: '900', color: 'white', margin: 0 }}>Lineage Preview</h4>
-                    <span style={{ fontSize: '10px', background: '#3b82f6', color: 'white', padding: '4px 10px', borderRadius: '6px', fontWeight: '900', letterSpacing: '0.05em' }}>{previewData.length} DETECTED</span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '55vh', overflowY: 'auto', paddingRight: '6px' }} className="custom-scrollbar-dark">
-                    {previewData.map((p, i) => (
-                        <div key={i} style={{ padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                                <span style={{ fontSize: '13px', fontWeight: '800', color: p.contract_id ? 'white' : '#f87171', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.contract_id || 'UID_NOT_FOUND'}</span>
-                                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>{p.studio} • {p.content_id}</span>
-                            </div>
-                            <div style={{ fontSize: '10px', fontWeight: '800', color: '#cbd5e1', textTransform: 'uppercase', background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>{p.territory}</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )}
-      </RightIngestionDrawer>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '55vh', overflowY: 'auto', paddingRight: '6px' }} className="custom-scrollbar-dark">
+                      {previewData.map((p, i) => (
+                          <div key={i} style={{ padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+                                  <span style={{ fontSize: '13px', fontWeight: '800', color: p.contract_id ? 'white' : '#f87171', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.contract_id || 'UID_NOT_FOUND'}</span>
+                                  <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>{p.studio} • {p.content_id}</span>
+                              </div>
+                              <div style={{ fontSize: '10px', fontWeight: '800', color: '#cbd5e1', textTransform: 'uppercase', background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>{p.territory}</div>
+                          </div>
+                      ))}
+                  </div>
+              </div>
+          )}
+        </RightIngestionDrawer>
+      )}
 
       {/* ─── Delete Confirmation Modal ─── */}
       <DeleteModal 
