@@ -33,8 +33,8 @@ export default function Violations() {
     window.open(`${import.meta.env.VITE_API_URL || ''}/api/export/violations.csv`, '_blank');
 
   return (
-    <div className="animate-in delay-1 flex flex-col flex-1 min-h-screen w-full max-w-none px-6 py-4">
-      <div className="page-header flex items-center justify-between mb-6">
+    <div className="animate-in delay-1">
+      <div className="page-header flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="page-title">Compliance Violations</h1>
@@ -43,17 +43,14 @@ export default function Violations() {
           <p className="page-subtitle">Contract enforcement failures and automated billing anomalies</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
-            <input 
-              type="text" 
-              placeholder="Search Breach/Title..." 
-              className="search-input pl-10"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ width: '300px' }}
-            />
-          </div>
+          <input 
+            type="text" 
+            placeholder="Search Breach/Title..." 
+            className="search-input"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ maxWidth: '400px', width: '100%', flex: 1 }}
+          />
           <button className="btn btn-outline" onClick={handleExport}>
             <Download size={14} /> Export CSV
           </button>
@@ -61,19 +58,15 @@ export default function Violations() {
       </div>
 
       {loading ? (
-        <div className="loading-wrap flex-1" style={{ minHeight: '400px' }}><div className="spinner"/><span>Scanning system for violations…</span></div>
+        <div className="loading-wrap" style={{ minHeight: '300px' }}><div className="spinner"/><span>Scanning system for violations…</span></div>
       ) : (
-      <div className="table-wrap flex-1">
-        <table className="data-table table-zebra">
+      <div className="table-wrap">
+        <table className="data-table">
           <thead>
             <tr>
-              <th style={{ minWidth: '150px' }}>Contract</th>
-              <th style={{ minWidth: '180px' }}>Content</th>
-              <th style={{ minWidth: '250px' }}>Violation Reason</th>
-              <th style={{ minWidth: '150px' }}>Financial Impact</th>
-              <th style={{ minWidth: '120px' }}>Severity</th>
-              <th style={{ minWidth: '150px' }}>Flagged Date</th>
-              <th style={{ textAlign: 'right', minWidth: '160px', position: 'sticky', right: 0, background: '#f8fafc', boxShadow: '-2px 0 5px rgba(0,0,0,0.05)' }}>Actions</th>
+              <th>Contract</th><th>Content</th><th>Violation Reason</th>
+              <th>Impact</th><th>Severity</th><th>Flagged Date</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -81,38 +74,40 @@ export default function Violations() {
               <tr><td colSpan={7} className="text-center py-20 text-muted">
                 <div className="flex flex-col items-center gap-3">
                   <ShieldAlert size={48} className="text-green opacity-20" />
-                  <span>No violations found. Your licensing environment is clean!</span>
+                  <span className="text-sm">No violations found. Your licensing environment is clean!</span>
                 </div>
               </td></tr>
             ) : results.map((r, i) => (
               <tr key={i}>
-                <td className="font-bold">{r.contract_id !== 'UNKNOWN' ? r.contract_id : <span className="text-muted italic">No Contract</span>}</td>
-                <td className="text-secondary">{r.content_id}</td>
-                <td>
+                <td className="text-sm font-semibold">{r.contract_id !== 'UNKNOWN' ? r.contract_id : <span className="text-muted italic">No Contract</span>}</td>
+                <td className="text-sm">{r.content_id}</td>
+                <td className="text-sm">
                   <div className="flex flex-wrap gap-1">
                     {r.violations.map((v, idx) => (
-                      <span key={idx} className="badge badge-red text-xs py-0.5 px-2" style={{ borderRadius: '4px' }}>
+                      <span key={idx} className="badge badge-red text-[10px] py-0 px-2" style={{ borderRadius: '4px' }}>
                         {v}
                       </span>
                     ))}
                   </div>
                 </td>
-                <td className={`font-bold ${r.difference !== 0 ? 'text-red' : 'text-muted'}`}>
+                <td className={`text-sm font-bold ${r.difference !== 0 ? 'text-red' : 'text-muted'}`}>
                   ₹{Math.abs(r.difference).toLocaleString()}
                 </td>
-                <td>
+                <td className="text-sm">
                   {r.status === 'UNDERPAID'
                     ? <span className="badge badge-red font-bold">CRITICAL</span>
                     : <span className="badge badge-amber font-bold">WARNING</span>}
                 </td>
-                <td className="text-muted">{formatDate(r.timestamp)}</td>
-                <td style={{ textAlign: 'right', position: 'sticky', right: 0, background: 'inherit', boxShadow: '-2px 0 5px rgba(0,0,0,0.02)' }}>
-                  <button className="action-btn action-btn-edit mr-2" title="Investigate">
-                    <Eye size={14}/> <span>Review</span>
-                  </button>
-                  <button className="action-btn action-btn-delete" title="Mark as Resolved">
-                    <Flag size={14}/> <span>Resolve</span>
-                  </button>
+                <td className="text-sm text-muted">{formatDate(r.timestamp)}</td>
+                <td className="text-right">
+                  <div className="flex gap-2 items-center justify-end">
+                    <button className="action-btn action-btn-edit" title="Investigate">
+                      <Eye size={14}/>
+                    </button>
+                    <button className="action-btn action-btn-delete" title="Mark as Resolved">
+                      <Flag size={14}/>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

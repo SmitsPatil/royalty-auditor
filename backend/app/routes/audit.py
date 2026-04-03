@@ -53,6 +53,7 @@ async def get_audit_results(q: str = None, category: str = None, skip: int = 0, 
                     AuditResult.studio.ilike(f"%{q}%")
                 )
             )
+        query = query.order_by(AuditResult.timestamp.desc())
         total = query.count()
         rows = query.offset(skip).limit(limit).all()
         return {

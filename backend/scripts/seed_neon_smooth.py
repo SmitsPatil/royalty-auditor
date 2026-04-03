@@ -28,18 +28,17 @@ def seed_neon_smooth():
     OVER_COUNT = 180
     UNDER_COUNT = 100
     
-    # Target Daily Sums for the smooth trend:
-    # Day 0 (Today): ~2450
-    # Day 1 (Yesterday): ~1800
-    # Day 2: ~1300
-    # Day 3: ~900
-    # Day 4: ~600
-    # Day 5: ~400
-    # Day 6 (Oldest): ~200
+    # Target Daily Sums for the smooth trend (Sum = ₹2,450):
+    # Day 0 (Today): ~700
+    # Day 1: ~550
+    # Day 2: ~420
+    # Day 3: ~310
+    # Day 4: ~220
+    # Day 5: ~150
+    # Day 6 (Oldest): ~100
     
-    daily_targets = [2450, 1800, 1300, 900, 600, 400, 200]
-    # Total sum of targets = 7,650
-    # This will be our new 'Total Variance' for the demo to achieve smoothness.
+    daily_targets = [700, 550, 420, 310, 220, 150, 100]
+    # Total sum of targets = ₹2,450
     
     contracts = []
     logs = []
