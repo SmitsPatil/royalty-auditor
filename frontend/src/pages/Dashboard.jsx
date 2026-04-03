@@ -82,6 +82,7 @@ export default function Dashboard() {
   const [loading, setLoading]   = useState(true);
   const [error,   setError]     = useState(null);
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   
   const chartRef = useRef();
 
@@ -90,9 +91,12 @@ export default function Dashboard() {
       setLoading(true);
       setError(null);
       try {
+        let url = `/analytics/summary?`;
+        if (categoryFilter) url += `category=${categoryFilter}&`;
+        
         const [s, a] = await Promise.all([
-          api.get(`/analytics/summary${categoryFilter ? `?category=${categoryFilter}` : ''}`),
-          api.get(`/audit/results${categoryFilter ? `?category=${categoryFilter}` : ''}`)
+          api.get(url),
+          api.get(`/audit/results?limit=100${categoryFilter ? `&category=${categoryFilter}` : ''}`)
         ]);
         setSummary(s.data);
         const auditData = a.data.data || a.data || [];
@@ -123,31 +127,54 @@ export default function Dashboard() {
   if (!summary) return null;
 
   /* ── Robust Calculations ── */
-  const safe_viols = summary.violations || {};
+  const totalViolations = (summary.overpaid || 0) + (summary.underpaid || 0);
   const violationData = {
-    labels: ['Territory', 'Expiry', 'Overpayment', 'Underpayment', 'Missing Pmt'],
+    labels: ['Overpaid', 'Underpaid'],
     datasets: [{
-      data: [
-        safe_viols.territory || 0,
-        safe_viols.expiry || 0,
-        safe_viols.overpayment || 0,
-        safe_viols.underpayment || 0,
-        safe_viols.missing_payment || 0
-      ],
-      backgroundColor: ['#3b82f6','#f59e0b','#10b981','#ef4444','#8b5cf6'],
-      hoverBackgroundColor: ['#2563eb','#d97706','#059669','#dc2626','#7c3aed'],
+      data: [summary.overpaid || 0, summary.underpaid || 0],
+      backgroundColor: ['#3b82f6', '#ef4444'],
+      hoverBackgroundColor: ['#2563eb', '#dc2626'],
       borderWidth: 0,
+      spacing: 2
     }]
   };
 
-  const overUnderData = {
-    labels: ['Overpaid', 'Underpaid'],
-    datasets: [{ 
-      data: [summary.overpaid_sum || 0, summary.underpaid_sum || 0],
-      backgroundColor: ['#10b981','#ef4444'],
-      hoverBackgroundColor: ['#059669','#dc2626'],
-      borderWidth: 0 
-    }]
+  const enhancedViolationOptions = {
+    ...CHART_OPTIONS_DONUT,
+    cutout: '72%',
+    plugins: {
+      ...CHART_OPTIONS_DONUT.plugins,
+      legend: {
+        ...CHART_OPTIONS_DONUT.plugins.legend,
+        display: true,
+        position: 'bottom',
+        labels: {
+          ...CHART_OPTIONS_DONUT.plugins.legend.labels,
+          generateLabels: (chart) => {
+            const data = chart.data;
+            if (data.labels.length && data.datasets.length) {
+              return data.labels.map((label, i) => {
+                const value = data.datasets[0].data[i];
+                const percentage = totalViolations > 0 ? Math.round((value / totalViolations) * 100) : 0;
+                return {
+                  text: `${label} (${percentage}% / ${value} cases)`,
+                  fillStyle: data.datasets[0].backgroundColor[i],
+                  index: i
+                };
+              });
+            }
+            return [];
+          }
+        }
+      }
+    },
+    onClick: (event, elements) => {
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        const status = index === 0 ? 'OVERPAID' : 'UNDERPAID';
+        setStatusFilter(prev => prev === status ? '' : status);
+      }
+    }
   };
 
   const studios = Object.entries(summary.by_studio || {})
@@ -238,10 +265,10 @@ export default function Dashboard() {
     .slice(0, 5);
 
   const trendData = {
-    labels: summary.trend?.labels || ['26 Mar', '27 Mar', '28 Mar', '29 Mar', '30 Mar', '31 Mar', '1 Apr'],
+    labels: summary.trend?.labels || [],
     datasets: [{
       label: 'Variance Trend',
-      data: summary.trend?.values || [1200, 1900, 1500, 2400, 2100, 1800, summary.total_leakage || 2000],
+      data: summary.trend?.values || [],
       borderColor: '#3b82f6',
       backgroundColor: 'rgba(59, 130, 240, 0.1)',
       fill: true,
@@ -262,6 +289,11 @@ export default function Dashboard() {
     }]
   };
 
+  // Local filtering for displayed alerts if statusFilter is active
+  const filteredAlerts = statusFilter 
+    ? recentAlerts.filter(a => a.status === statusFilter)
+    : recentAlerts;
+
   return (
     <div className="animate-in delay-1">
       {/* ── Page Header ── */}
@@ -272,6 +304,11 @@ export default function Dashboard() {
             {categoryFilter && (
               <span className="badge badge-purple flex items-center gap-2 cursor-pointer py-1.5 px-4 border border-purple-200 animate-in fade-in" onClick={() => setCategoryFilter('')} title="Click to clear filter">
                 Filtered by: {categoryFilter} <FilterX size={14} />
+              </span>
+            )}
+            {statusFilter && (
+              <span className="badge badge-red flex items-center gap-2 cursor-pointer py-1.5 px-4 border border-red-200 animate-in fade-in" onClick={() => setStatusFilter('')} title="Click to clear status filter">
+                Status: {statusFilter} <FilterX size={14} />
               </span>
             )}
             {loading && !!summary && <div className="spinner" style={{ width: 16, height: 16, borderLeftColor: 'var(--blue)' }} />}
@@ -311,7 +348,7 @@ export default function Dashboard() {
                 </div>
                 <span className="hero-kpi-chip">avg loss / contract</span>
               </div>
-              <div className="hero-kpi-card">
+              <div className="hero-kpi-card border border-amber-50" style={{ background: 'linear-gradient(to bottom, #fff, #fff9eb)' }}>
                 <span className="hero-kpi-label">Underpaid</span>
                 <div className="hero-kpi-value-wrap">
                   <span className="hero-kpi-value text-hero-amber">{summary.underpaid || 0}</span>
@@ -319,7 +356,7 @@ export default function Dashboard() {
                 </div>
                 <span className="hero-kpi-chip">Leakage Count</span>
               </div>
-              <div className="hero-kpi-card">
+              <div className="hero-kpi-card border border-blue-50" style={{ background: 'linear-gradient(to bottom, #fff, #f0f7ff)' }}>
                 <span className="hero-kpi-label">Overpaid</span>
                 <div className="hero-kpi-value-wrap">
                   <span className="hero-kpi-value text-hero-blue">{summary.overpaid || 0}</span>
@@ -397,18 +434,18 @@ export default function Dashboard() {
           </div>
           
           <div className="alert-feed">
-            {recentAlerts.length > 0 ? recentAlerts.map(alert => (
+            {filteredAlerts.length > 0 ? filteredAlerts.map(alert => (
               <div key={alert.id} className="alert-item">
                 <span className="alert-id">#{alert.contract_id}</span>
                 <span className="alert-name truncate" title={alert.content_id}>{alert.content_id}</span>
-                <span className="alert-amount">₹{Math.abs(alert.difference || 0).toLocaleString()}</span>
-                <span className="alert-date">{formatDate(alert.timestamp)}</span>
+                <span className="alert-amount font-mono">₹{Math.abs(alert.difference || 0).toLocaleString()}</span>
+                <span className="alert-date text-[10px]">{formatDate(alert.timestamp)}</span>
                 <span className={`severity-badge ${alert.status === 'UNDERPAID' ? 'severity-critical' : 'severity-warning'}`}>
                   {alert.status}
                 </span>
               </div>
             )) : (
-              <div className="text-center text-slate-400 py-20 text-[12px]">All systems clear. No recent violations.</div>
+              <div className="text-center text-slate-400 py-20 text-[12px]">All systems clear. No recent violations found.</div>
             )}
           </div>
         </div>
@@ -416,7 +453,7 @@ export default function Dashboard() {
         <div className="card h-auto" style={{ height: 'auto', minHeight: 450 }}>
           <div className="card-title flex items-center justify-between">
             <span className="card-title-text"><LineChart size={14} className="text-blue-500" /> 7-Day Financial Trend</span>
-            <span className="badge badge-purple py-1 px-3 text-[10px]">Timeline: 25 Mar – 1 Apr</span>
+            <span className="badge badge-purple py-1 px-3 text-[10px]">Audit Lifecycle</span>
           </div>
           <div className="trend-report">
             <Line data={trendData} options={{ 
@@ -430,38 +467,35 @@ export default function Dashboard() {
           </div>
           <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-500">Historical performance suggests a 2.4% volatility in streaming log accuracy.</span>
-                <span className="font-bold text-blue-600">Stable Analysis</span>
+                <span className="text-slate-500">Gradual audit scaling detected. Financial accuracy improving with log density.</span>
+                <span className="font-bold text-blue-600">Stable Progression</span>
              </div>
           </div>
         </div>
       </div>
 
       {/* ── Charts Grid ── */}
-      <div className={`grid grid-strict ${loading && !!summary ? 'opacity-50' : ''}`} style={{ transition: 'opacity 0.2s' }}>
+      <div className={`grid grid-strict grid-cols-3 ${loading && !!summary ? 'opacity-50' : ''}`} style={{ transition: 'opacity 0.2s' }}>
         <div className="card">
-          <div className="card-title"><span className="card-title-text">Violation Types</span></div>
-          <div style={{ height: 220 }}>
-            <Doughnut data={violationData} options={CHART_OPTIONS_DONUT} />
+          <div className="card-title"><span className="card-title-text">Violation Analytics</span></div>
+          <div style={{ height: 260 }}>
+            <Doughnut data={violationData} options={enhancedViolationOptions} />
           </div>
+          <div className="text-center text-[10px] text-slate-400 mt-2">Click segments to filter dashboard</div>
         </div>
-        <div className="card">
-          <div className="card-title"><span className="card-title-text">Variance Ratio</span></div>
-          <div style={{ height: 220 }}>
-            <Doughnut data={overUnderData} options={CHART_OPTIONS_DONUT} />
-          </div>
-        </div>
+        
         <div className="card">
           <div className="card-title">
             <span className="card-title-text">Leakage by Studio</span>
           </div>
-          <div style={{ height: 220 }}>
+          <div style={{ height: 260 }}>
             <Bar data={studioData} options={CHART_OPTIONS_BAR} />
           </div>
         </div>
+        
         <div className="card">
           <div className="card-title"><span className="card-title-text">Top 10 Leakage by Content</span></div>
-          <div style={{ height: 220 }}>
+          <div style={{ height: 260 }}>
             <Bar data={contentData} options={{ ...CHART_OPTIONS_BAR, indexAxis: 'y' }} />
           </div>
         </div>
