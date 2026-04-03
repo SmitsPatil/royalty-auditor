@@ -358,7 +358,7 @@ export default function Dashboard() {
               <div className="hero-kpi-card">
                 <span className="hero-kpi-label">Clean Files</span>
                 <div className="hero-kpi-value-wrap">
-                  <span className="hero-kpi-value text-hero-green">{summary.clean || 0}</span>
+                  <span className="hero-kpi-value text-hero-green">{summary.clean ?? 0}</span>
                   <div className="kpi-icon-wrap"><CheckCircle size={16} className="text-green-400" /></div>
                 </div>
                 <span className="hero-kpi-chip">Audit Confirmed</span>
@@ -514,6 +514,10 @@ export default function Dashboard() {
           <div style={{ height: 260 }}>
             <Bar data={contentData} options={{ ...CHART_OPTIONS_BAR, indexAxis: 'y' }} />
           </div>
+        </div>
+        <div className="mt-8 mb-4 pt-4 border-t border-white/5 flex justify-between items-center opacity-40 text-[10px] uppercase tracking-widest px-2">
+          <span>&copy; 2026 LRAC Enterprise Intelligence</span>
+          <span>Build: 1.0.4 - Neon Relational Sync Active</span>
         </div>
       </div>
     </div>
