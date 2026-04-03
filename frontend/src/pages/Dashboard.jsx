@@ -248,11 +248,34 @@ export default function Dashboard() {
             const label = context.label || '';
             const val = context.raw || 0;
             const total = catData.reduce((a, b) => a + b, 0);
-            const pct = Math.round((val / total) * 100);
+            const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+            const leakage = summary.category_metrics[label]?.leakage || 0;
             return [
-              ` Contracts: ${val} (${pct}%)`,
-              ` Variance: ₹${(summary.category_metrics[label]?.leakage || 0).toLocaleString()}`
+              ` ${label}: ${val} Contracts (${pct}%)`,
+              ` Total Variance: ₹${leakage.toLocaleString()}`
             ];
+          }
+        }
+      },
+      legend: {
+        display: true,
+        position: 'right',
+        labels: {
+          color: '#94a3b8',
+          padding: 15,
+          font: { size: 10, weight: '600' },
+          generateLabels: (chart) => {
+            const data = chart.data;
+            const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+            return data.labels.map((label, i) => {
+              const val = data.datasets[0].data[i];
+              const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+              return {
+                text: `${label} (${pct}%)`,
+                fillStyle: data.datasets[0].backgroundColor[i],
+                index: i
+              };
+            });
           }
         }
       }
@@ -348,16 +371,22 @@ export default function Dashboard() {
                 </div>
                 <span className="hero-kpi-chip">avg loss / contract</span>
               </div>
-              <div className="hero-kpi-card border border-amber-50" style={{ background: 'linear-gradient(to bottom, #fff, #fff9eb)' }}>
-                <span className="hero-kpi-label">Underpaid</span>
+              <div className="hero-kpi-card">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="hero-kpi-label">Underpaid</span>
+                  <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">Critical</span>
+                </div>
                 <div className="hero-kpi-value-wrap">
                   <span className="hero-kpi-value text-hero-amber">{summary.underpaid || 0}</span>
                   <div className="kpi-icon-wrap"><AlertCircle size={16} className="text-amber-400" /></div>
                 </div>
                 <span className="hero-kpi-chip">Leakage Count</span>
               </div>
-              <div className="hero-kpi-card border border-blue-50" style={{ background: 'linear-gradient(to bottom, #fff, #f0f7ff)' }}>
-                <span className="hero-kpi-label">Overpaid</span>
+              <div className="hero-kpi-card">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="hero-kpi-label">Overpaid</span>
+                  <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">Audit Error</span>
+                </div>
                 <div className="hero-kpi-value-wrap">
                   <span className="hero-kpi-value text-hero-blue">{summary.overpaid || 0}</span>
                   <div className="kpi-icon-wrap"><TrendingUp size={16} className="text-blue-400" /></div>
@@ -383,16 +412,16 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="flex items-center justify-between mt-10 gap-4">
-              <div className="flex items-center gap-2 text-[12px] text-slate-400 p-4 border border-white/5 rounded-lg bg-white/5 backdrop-blur-sm flex-1">
+            <div className="flex items-center justify-between mt-10 gap-6">
+              <div className="flex items-center gap-3 text-[11px] text-gray-300 p-3 bg-black/30 backdrop-blur-sm rounded-lg border border-white/5 flex-1 select-none">
                 <MousePointer2 size={13} className="text-blue-400" />
                 <span>Interactive drill-down active. Audit precision synced across all metrics.</span>
               </div>
               
-              <div className="flex flex-col gap-1 p-3 border border-white/5 rounded-lg bg-white/5 backdrop-blur-sm w-[220px]">
-                <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-tighter mb-1">
+              <div className="flex flex-col gap-1 p-3 bg-black/30 backdrop-blur-sm rounded-lg border border-white/5 w-[220px]">
+                <div className="flex items-center justify-between text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">
                   <span>Region Risk Heat</span>
-                  <span className="text-red-400 font-bold">Top 4</span>
+                  <span className="text-red-400">Top 4</span>
                 </div>
                 <div style={{ height: 60 }}>
                   <Bar data={regionRiskData} options={{
@@ -401,7 +430,7 @@ export default function Dashboard() {
                     plugins: { legend: { display: false }, tooltip: { enabled: true } },
                     scales: {
                       x: { display: false, grid: { display: false } },
-                      y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 } } }
+                      y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9, weight: '600' } } }
                     }
                   }} />
                 </div>
