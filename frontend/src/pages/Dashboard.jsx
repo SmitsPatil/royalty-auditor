@@ -377,35 +377,40 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="mt-6 flex gap-6 items-stretch">
-              <div className="hero-kpi-card flex flex-row items-center gap-8 py-4 px-6 flex-1 min-h-[140px]">
-                <div className="flex flex-col justify-center border-r border-white/5 pr-8 min-w-[160px]">
-                  <span className="hero-kpi-label mb-2">Reliability score</span>
-                  <div className="hero-kpi-value-wrap mb-1">
-                    <span className="hero-kpi-value text-slate-300">
-                      {Math.round((summary.clean / summary.total_count) * 100)}%
-                    </span>
-                  </div>
-                  <span className="hero-kpi-chip">Compliance Rating</span>
+            {/* --- Dedicated Analytics Row (Drops below to prevent overlap) --- */}
+            <div className="mt-4 w-full grid grid-cols-2 gap-6 items-start border-t border-white/5 pt-4">
+              {/* Left Column: Compliance Block */}
+              <div className="hero-kpi-card min-w-[200px] h-full flex flex-col justify-center py-3">
+                <span className="hero-kpi-label text-sm">Compliance Score</span>
+                <div className="hero-kpi-value-wrap my-1">
+                  <span className="hero-kpi-value text-slate-300 text-3xl">
+                    {Math.round((summary.clean / summary.total_count) * 100)}%
+                  </span>
                 </div>
-                
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-hero-muted-white text-[10px] uppercase tracking-widest">Region Risk Heat – Top regions</span>
-                    <span className="text-[10px] text-red-400 font-bold">LIVE RISK MAP</span>
-                  </div>
-                  
-                  <div style={{ height: 65 }}>
-                    <Bar data={regionRiskData} options={{
-                      indexAxis: 'y',
-                      maintainAspectRatio: false,
-                      plugins: { legend: { display: false }, tooltip: { enabled: true } },
-                      scales: {
-                        x: { display: false },
-                        y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 10, weight: '600' } } }
-                      }
-                    }} />
-                  </div>
+                <span className="hero-kpi-chip">Reliability Rating</span>
+              </div>
+              
+              {/* Right Column: Region Heat Block */}
+              <div className="glass-legend-box p-3 w-full h-full flex flex-col">
+                <span className="text-hero-muted-white text-[9px] uppercase tracking-widest block mt-2 mb-3">Region Risk – Live Heat Map</span>
+                <div className="flex flex-col space-y-2">
+                  {[
+                    { label: 'CA', val: 85 },
+                    { label: 'IN', val: 62 },
+                    { label: 'UK', val: 45 },
+                    { label: 'US', val: 28 }
+                  ].map(r => (
+                    <div key={r.label} className="flex items-center gap-3">
+                      <span className="text-[10px] text-slate-400 font-bold w-6">{r.label}</span>
+                      <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-1000" 
+                          style={{ width: `${r.val}%`, opacity: r.val / 100 }} 
+                        />
+                      </div>
+                      <span className="text-[9px] text-red-400 font-mono w-8 text-right">{r.val}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
