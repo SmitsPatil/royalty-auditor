@@ -421,7 +421,7 @@ export default function Dashboard() {
               </div>
 
               {/* Custom High-Contrast Legend - No Clipping, High Readability */}
-              <div className="flex flex-col gap-2 p-4 bg-black/40 backdrop-blur-md rounded-lg border border-white/10 min-w-[160px] select-none shadow-2xl">
+              <div className="flex flex-col gap-2.5 p-4 bg-black/50 backdrop-blur-md rounded-lg border border-white/10 min-w-[180px] select-none shadow-2xl overflow-visible">
                 {catLabels.map((label, i) => {
                   const val = catData[i];
                   const total = catData.reduce((a, b) => a + b, 0);
@@ -432,18 +432,18 @@ export default function Dashboard() {
                     <div 
                       key={label}
                       onClick={() => setCategoryFilter(prev => prev === label ? '' : label)}
-                      className={`flex items-center justify-between gap-4 cursor-pointer group transition-all px-2 py-1.5 rounded-md whitespace-nowrap ${isActive ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'}`}
+                      className={`flex items-center justify-between gap-6 cursor-pointer group transition-all px-2.5 py-2 rounded-md whitespace-nowrap ${isActive ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'}`}
                     >
                       <div className="flex items-center gap-3">
                         <div 
                           className="w-2.5 h-2.5 rounded-full shadow-sm shadow-black/80" 
                           style={{ backgroundColor: catColors[i] }}
                         />
-                        <span className={`text-[13px] font-bold drop-shadow-md transition-colors ${isActive ? 'text-white opacity-100' : 'text-gray-100 opacity-90 group-hover:text-white group-hover:opacity-100'}`}>
+                        <span className={`text-[13px] font-bold drop-shadow-md transition-all text-white opacity-100`}>
                           {label}
                         </span>
                       </div>
-                      <span className="text-[11px] font-black text-white/50 drop-shadow-sm group-hover:text-white/90 transition-colors">
+                      <span className="text-[11px] font-black text-white/50 drop-shadow-sm group-hover:text-white/100 transition-colors">
                         {pct}%
                       </span>
                     </div>

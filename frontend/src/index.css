@@ -104,7 +104,7 @@ body {
   margin-bottom: 1.5rem;
   box-shadow: var(--hero-glow);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -114,8 +114,8 @@ body {
   gap: 3rem;
   width: 100%;
 }
-.hero-left { flex: 1.8; }
-.hero-right { flex: 1.2; max-width: 420px; display: flex; align-items: center; justify-content: center; }
+.hero-left { flex: 1.5; }
+.hero-right { flex: 1.2; max-width: 600px; display: flex; align-items: center; justify-content: center; overflow: visible; }
 
 @media (max-width: 1200px) {
   .hero-split { flex-direction: column; gap: 2rem; }
