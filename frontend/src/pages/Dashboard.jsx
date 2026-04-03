@@ -414,14 +414,14 @@ export default function Dashboard() {
           </div>
           
           <div className="hero-right">
-            <div className="flex items-center justify-between w-full h-full gap-6">
-              {/* Chart Container */}
-              <div className="flex-1 h-full cursor-pointer flex items-center">
+            <div className="flex items-center justify-between w-full h-full gap-8 overflow-visible">
+              {/* Chart Container - Ensure it doesn't clip children */}
+              <div className="flex-1 h-full cursor-pointer flex items-center overflow-visible">
                 <Doughnut ref={chartRef} data={categoryChartData} options={categoryOptions} onClick={onChartClick} />
               </div>
 
-              {/* Custom High-Contrast Legend */}
-              <div className="flex flex-col gap-2 p-4 bg-black/40 backdrop-blur-md rounded-lg border border-white/5 min-w-[180px] select-none">
+              {/* Custom High-Contrast Legend - No Clipping, High Readability */}
+              <div className="flex flex-col gap-2 p-4 bg-black/40 backdrop-blur-md rounded-lg border border-white/10 min-w-[160px] select-none shadow-2xl">
                 {catLabels.map((label, i) => {
                   const val = catData[i];
                   const total = catData.reduce((a, b) => a + b, 0);
@@ -432,18 +432,18 @@ export default function Dashboard() {
                     <div 
                       key={label}
                       onClick={() => setCategoryFilter(prev => prev === label ? '' : label)}
-                      className={`flex items-center justify-between gap-3 cursor-pointer group transition-all px-2 py-1.5 rounded-md ${isActive ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'}`}
+                      className={`flex items-center justify-between gap-4 cursor-pointer group transition-all px-2 py-1.5 rounded-md whitespace-nowrap ${isActive ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'}`}
                     >
                       <div className="flex items-center gap-3">
                         <div 
-                          className="w-2.5 h-2.5 rounded-full shadow-sm shadow-black/50" 
+                          className="w-2.5 h-2.5 rounded-full shadow-sm shadow-black/80" 
                           style={{ backgroundColor: catColors[i] }}
                         />
-                        <span className={`text-sm font-semibold transition-colors ${isActive ? 'text-white' : 'text-gray-200 group-hover:text-white'}`}>
+                        <span className={`text-[13px] font-bold drop-shadow-md transition-colors ${isActive ? 'text-white opacity-100' : 'text-gray-100 opacity-90 group-hover:text-white group-hover:opacity-100'}`}>
                           {label}
                         </span>
                       </div>
-                      <span className="text-[11px] font-bold text-white/50 group-hover:text-white/80 transition-colors">
+                      <span className="text-[11px] font-black text-white/50 drop-shadow-sm group-hover:text-white/90 transition-colors">
                         {pct}%
                       </span>
                     </div>
