@@ -411,26 +411,25 @@ export default function Dashboard() {
                 <span className="hero-kpi-chip">Reliability Rating</span>
               </div>
             </div>
-            
-            <div className="flex items-center justify-between mt-10 gap-6">
-              <div className="flex items-center gap-3 text-[11px] text-gray-300 p-3 bg-black/30 backdrop-blur-sm rounded-lg border border-white/5 flex-1 select-none">
+
+            <div className="mt-8 flex flex-col gap-3">
+              <div className="flex items-center gap-3 text-[11px] text-gray-200 font-medium p-3 bg-black/40 backdrop-blur-md rounded-md border border-white/5 select-none w-fit">
                 <MousePointer2 size={13} className="text-blue-400" />
-                <span>Interactive drill-down active. Audit precision synced across all metrics.</span>
+                <span>Drill-down active (click charts to filter)</span>
               </div>
               
-              <div className="flex flex-col gap-1 p-3 bg-black/30 backdrop-blur-sm rounded-lg border border-white/5 w-[220px]">
-                <div className="flex items-center justify-between text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">
-                  <span>Region Risk Heat</span>
-                  <span className="text-red-400">Top 4</span>
+              <div className="flex flex-col gap-2 p-3 bg-black/40 backdrop-blur-md rounded-md border border-white/5 w-fit min-w-[280px]">
+                <div className="flex items-center justify-between text-[10px] text-gray-300 uppercase tracking-widest font-bold mb-1">
+                  <span>Region Risk Heat – Top 4 regions</span>
                 </div>
-                <div style={{ height: 60 }}>
+                <div style={{ height: 50 }}>
                   <Bar data={regionRiskData} options={{
                     indexAxis: 'y',
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false }, tooltip: { enabled: true } },
                     scales: {
-                      x: { display: false, grid: { display: false } },
-                      y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9, weight: '600' } } }
+                      x: { display: false },
+                      y: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 9, weight: '600' } } }
                     }
                   }} />
                 </div>
