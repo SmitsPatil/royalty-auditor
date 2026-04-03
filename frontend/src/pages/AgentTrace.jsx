@@ -13,14 +13,14 @@ function BarChart3({ size }) { return <Activity size={size}/>; }
 function Fingerprint({ size }) { return <Shield size={size}/>; }
 
 const AGENTS = [
-  { id: 'Orchestrator', icon: <Cpu size={14}/>, desc: 'Coordinating Audit Pipeline' },
-  { id: 'ContractReader', icon: <FileSearch size={14}/>, desc: 'Parsing Royalties & Tiers' },
-  { id: 'Usage', icon: <Database size={14}/>, desc: 'Aggregating Play Metadata' },
-  { id: 'Ledger', icon: <CreditCard size={14}/>, desc: 'Validating Global Payments' },
-  { id: 'Royalty', icon: <BarChart3 size={14}/>, desc: 'Calculating Leakage Delta' },
-  { id: 'Audit', icon: <Fingerprint size={14}/>, desc: 'Final Integrity Check' },
-  { id: 'Violation', icon: <AlertTriangle size={14}/>, desc: 'Flagging Rogue Stream IDs' },
-  { id: 'Reporter', icon: <Send size={14}/>, desc: 'Syncing Financial Summary' }
+  { id: 'PlannerAgent', icon: <Cpu size={14}/>, desc: 'Coordinating Audit Pipeline' },
+  { id: 'ContractReaderAgent', icon: <FileSearch size={14}/>, desc: 'Parsing Royalties & Tiers' },
+  { id: 'UsageAgent', icon: <Database size={14}/>, desc: 'Aggregating Play Metadata' },
+  { id: 'LedgerAgent', icon: <CreditCard size={14}/>, desc: 'Validating Global Payments' },
+  { id: 'RoyaltyAgent', icon: <BarChart3 size={14}/>, desc: 'Calculating Leakage Delta' },
+  { id: 'AuditAgent', icon: <Fingerprint size={14}/>, desc: 'Final Integrity Check' },
+  { id: 'ViolationAgent', icon: <AlertTriangle size={14}/>, desc: 'Flagging Rogue Stream IDs' },
+  { id: 'ReporterAgent', icon: <Send size={14}/>, desc: 'Syncing Financial Summary' }
 ];
 
 export default function AgentTrace() {
@@ -97,12 +97,12 @@ export default function AgentTrace() {
             filters: { contract_id: ids } 
         });
 
-        const logs = res.data.agent_trace || [];
+        const logs = res.data.trace || res.data.agent_trace || [];
         setAgentLogs(prev => ({ ...prev, [agent.id]: logs }));
         setAgentStatus(prev => ({ ...prev, [agent.id]: 'done' }));
         setTelemetry(prev => [...prev, ...logs.map(l => ({ ...l, agent: agent.id }))]);
 
-        if (agent.id === 'Reporter' && res.data.summary) {
+        if (agent.id === 'ReporterAgent' && res.data.summary) {
           setSummary(res.data.summary);
         }
       } catch (err) {
@@ -315,7 +315,7 @@ export default function AgentTrace() {
                         agentLogs[agent.id].map((log, i) => (
                           <div key={i} className="flex gap-2 text-[9px] leading-tight mb-1">
                             <span className="text-blue-500 font-bold opacity-40">{'>'}</span>
-                            <span className={getLogLvl(log.detail)}>{log.detail}</span>
+                            <span className={getLogLvl(log.message || log.detail)}>{log.message || log.detail}</span>
                           </div>
                         ))
                       ) : (
@@ -350,7 +350,7 @@ export default function AgentTrace() {
                     <div key={i} className="trace-log-item">
                        <span className="log-ts">[{new Date(log.timestamp || Date.now()).toLocaleTimeString([], { hour12: false })}]</span>
                        <span className="log-agent">[{log.agent || 'SYS'}]</span>
-                       <span className={`log-msg ${getLogLvl(log.detail)}`}>{log.detail}</span>
+                       <span className={`log-msg ${getLogLvl(log.message || log.detail)}`}>{log.message || log.detail}</span>
                     </div>
                   ))
                )}

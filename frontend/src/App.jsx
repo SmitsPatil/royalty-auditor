@@ -129,7 +129,7 @@ function Sidebar({ isCollapsed }) {
       <div className="sidebar-footer">
         <div className="sidebar-footer-divider"></div>
         <a 
-          href="http://localhost:8000/docs" 
+          href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/docs`} 
           target="_blank" 
           rel="noreferrer"
           title="API Documentation"
