@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Edit, Trash2, X, Check, AlertTriangle, Upload } from 'lucide-react';
+import { Edit, Trash2, X, Check, AlertTriangle } from 'lucide-react';
 import api from '../api';
 import { formatDate } from '../utils';
-import Papa from 'papaparse';
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Worker configuration for PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 // ─── Delete Confirmation Modal Component ───────────────────────────
 const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, setRetentionDays }) => {
@@ -141,104 +136,6 @@ export default function ContractsTable() {
     }
   };
 
-  const parseCSV = (file) => {
-    return new Promise((resolve, reject) => {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const cleaned = results.data.map(row => ({
-            contract_id: row.contract_id || row.id || `CTR-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-            content_id: row.content_id || 'CID-UNKNOWN',
-            royalty_rate: parseFloat(row.royalty_rate || 0),
-            rate_per_play: parseFloat(row.rate_per_play || 0),
-            tier_rate: parseFloat(row.tier_rate || 0),
-            tier_threshold: parseInt(row.tier_threshold || 0),
-            territory: row.territory || 'Global',
-            studio: row.studio || 'Unknown',
-            start_date: row.start_date || new Date().toISOString().split('T')[0],
-            end_date: row.end_date || '2029-12-31'
-          }));
-          resolve(cleaned);
-        },
-        error: (err) => reject(err)
-      });
-    });
-  };
-
-  const parsePDF = async (file) => {
-    const arrayBuffer = await file.arrayBuffer();
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-    const pdf = await loadingTask.promise;
-    let fullText = '';
-    
-    for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        fullText += textContent.items.map(item => item.str).join(' ') + ' ';
-    }
-
-    // Heuristic extraction for PDF fields
-    const contracts = [];
-    const lowerText = fullText.toLowerCase();
-
-    // Look for patterns like "Contract ID: CTR-1234"
-    const idRegex = /(?:contract\s*id|id|cid)\W*([a-z0-9-]+)/gi;
-    const rateRegex = /(?:rate|royalty|price)\W*(\d*\.?\d+)/gi;
-    const territoryRegex = /(?:territory|region|country)\W*([a-z,\s]{2,10})/gi;
-
-    let match;
-    const ids = [];
-    while ((match = idRegex.exec(fullText)) !== null) {
-        ids.push(match[1]);
-    }
-
-    if (ids.length > 0) {
-        ids.forEach((id, idx) => {
-            contracts.push({
-                contract_id: id,
-                content_id: 'CID-PDF-' + id.substring(0, 4),
-                rate_per_play: 0.12, // Default fallback if extraction fails
-                territory: 'US,UK,IN',
-                studio: 'Extracted PDF',
-                start_date: new Date().toISOString().split('T')[0],
-                end_date: '2030-12-31'
-            });
-        });
-    }
-
-    return contracts;
-  };
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setLoading(true);
-    try {
-      let data = [];
-      if (file.name.toLowerCase().endsWith('.csv')) {
-        data = await parseCSV(file);
-      } else if (file.name.toLowerCase().endsWith('.pdf')) {
-        data = await parsePDF(file);
-      }
-
-      if (data.length === 0) {
-        throw new Error("No valid data could be extracted from the file.");
-      }
-
-      await api.post('/contracts/upload', { contracts: data });
-      alert(`Successfully uploaded ${data.length} contracts.`);
-      fetchContracts(0, search);
-    } catch (err) {
-      console.error("Upload failed", err);
-      alert("Failed to process file: " + err.message);
-    } finally {
-      setLoading(false);
-      e.target.value = '';
-    }
-  };
-
   return (
     <div className="animate-in delay-1">
       <div className="page-header flex items-center justify-between">
@@ -255,22 +152,6 @@ export default function ContractsTable() {
             onChange={(e) => setSearch(e.target.value)}
             style={{ width: '320px' }}
           />
-          <input 
-            type="file" 
-            id="contract-upload-input" 
-            accept=".csv,.pdf" 
-            onChange={handleFileUpload} 
-            className="hidden" 
-            style={{ display: 'none' }}
-          />
-          <button 
-            className="btn btn-blue flex items-center gap-2" 
-            onClick={() => document.getElementById('contract-upload-input').click()}
-            disabled={loading}
-          >
-            <Upload size={18} />
-            <span>{loading ? 'Processing...' : 'Upload CSV/PDF'}</span>
-          </button>
           <span className="badge badge-blue">{contracts.length} visible</span>
         </div>
       </div>

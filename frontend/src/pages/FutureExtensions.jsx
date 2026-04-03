@@ -1,58 +1,53 @@
 import { useState } from 'react';
 import { Bot, Send, FileText, Zap, Database, Lock, Link as LinkIcon, CreditCard } from 'lucide-react';
-import api from '../api';
 
 function NLQChat() {
   const [query, setQuery]     = useState('');
   const [answer, setAnswer]   = useState('');
   const [loading, setLoading] = useState(false);
 
-  const ask = async () => {
+  const MOCK_ANSWERS = {
+    default: "Based on the audit trace, the content had 42,000 plays attributed to territory DE (Germany), which is not covered under its licensing contract (territory: US, CA). As a result, the RoyaltyAgent calculated expected revenue as $0 for those plays. However, the Ledger Agent detected a payment of $1,260 was already dispatched for these plays, generating an OVERPAYMENT flag of $1,260."
+  };
+
+  const ask = () => {
     if (!query.trim()) return;
     setLoading(true);
     setAnswer('');
-    try {
-      const res = await api.post('/analytics/query', { query });
-      setAnswer(res.data.answer || "I parsed the audit trail but couldn't find a specific anomaly for that query.");
-    } catch (err) {
-      setAnswer("The Audit Agent is currently offline or the dataset is still indexing. Please try again in a moment.");
-    } finally {
+    setTimeout(() => {
+      setAnswer(MOCK_ANSWERS.default);
       setLoading(false);
-    }
+    }, 1200);
   };
 
   return (
-    <div className="card mb-6 bg-gradient-to-br from-white/5 to-transparent backdrop-blur border border-white/10">
+    <div className="card mb-6">
       <div className="card-title">
-        <span className="card-title-text text-white font-medium"><Bot size={14} className="text-blue-400" /> Audit Intelligence Agent</span>
-        <span className="badge badge-blue">Live Analysis</span>
+        <span className="card-title-text"><Bot size={14} /> Natural Language Query</span>
+        <span className="badge badge-blue">AI Powered</span>
       </div>
-      <p className="text-sm text-gray-400 mb-4">Ask the Auditor anything about a specific contract, studio, or financial violation.</p>
+      <p className="text-sm text-muted mb-4">Ask the Audit Agent anything about a specific contract, content, or violation.</p>
       <div className="flex gap-3">
         <input
           type="text"
-          className="bg-white/10 border border-white/20 text-white rounded-md px-4 py-2 flex-1 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder='e.g. "Why was Content_442 overpaid?"'
+          placeholder='e.g. "Why was Movie_442 overpaid?"'
           onKeyDown={e => e.key === 'Enter' && ask()}
         />
-        <button className="btn btn-primary bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-md font-bold transition-all" onClick={ask} disabled={loading}>
-          {loading ? 'Analyzing...' : 'Ask Agent'}
+        <button className="btn btn-primary" onClick={ask} style={{ flexShrink: 0 }}>
+          {loading ? '…' : <Send size={14} />} Ask
         </button>
       </div>
       {loading && (
-        <div className="flex items-center gap-3 mt-4 text-xs font-bold text-blue-400 animate-pulse">
-           <Zap size={12}/> AGENT COGNITION IN PROGRESS...
+        <div className="flex items-center gap-2 mt-4 text-sm text-muted">
+          <div className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Thinking…
         </div>
       )}
       {answer && (
-        <div className="ai-response mt-6 p-4 bg-white/5 border border-white/10 rounded-lg animate-in">
-          <div className="flex items-center gap-2 mb-2">
-             <Bot size={14} className="text-blue-400" />
-             <span className="text-[10px] font-black uppercase tracking-widest text-[#FFFFFF]">Audit Terminal Response</span>
-          </div>
-          <p className="text-sm text-gray-200 leading-relaxed font-medium">{answer}</p>
+        <div className="ai-response mt-4 animate-in">
+          <div className="ai-icon"><Bot size={14} /></div>
+          <p className="ai-text">{answer}</p>
         </div>
       )}
     </div>

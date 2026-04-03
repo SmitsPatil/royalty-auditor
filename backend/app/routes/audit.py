@@ -38,8 +38,8 @@ async def run_audit_step(params: AuditStepParams, db: Session = Depends(get_db))
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/results")
-async def get_audit_results(q: str = None, category: str = None, skip: int = 0, limit: int = 100000, db: Session = Depends(get_db)):
-    """Return stored audit results from SQLite with pagination and search. 100k limit effectively removes truncation."""
+async def get_audit_results(q: str = None, category: str = None, skip: int = 0, limit: int = 200, db: Session = Depends(get_db)):
+    """Return stored audit results from SQLite with pagination and search."""
     try:
         query = db.query(AuditResult)
         if category:

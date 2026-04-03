@@ -166,18 +166,18 @@ export default function AgentTrace() {
           
           <div className="trace-multi-wrap" onClick={e => e.stopPropagation()}>
             <div 
-              className={`trace-multi-trigger bg-white/10 border border-white/20 rounded-md px-3 py-1 flex items-center justify-between gap-3 cursor-pointer transition-all hover:bg-white/15 ${isMenuOpen ? 'open ring-1 ring-blue-500/50' : ''}`}
+              className={`trace-multi-trigger ${isMenuOpen ? 'open' : ''}`}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
                <div className="flex items-center gap-2">
                   <Database size={12} className="text-blue-400"/>
-                  <span className="text-[10px] font-semibold text-white uppercase tracking-tighter">
+                  <span className="text-[10px] font-black text-white uppercase tracking-tighter">
                     {selectedIds.length === 0 ? 'Select Contract Flows...' : 
                      selectedIds.length === 1 ? contracts.find(c => c.contract_id === selectedIds[0])?.content_id :
                      `${selectedIds.length} Contracts Selected`}
                   </span>
                </div>
-               <ChevronDown size={14} className={`text-white transition-transform ${isMenuOpen ? 'rotate-180' : ''}`}/>
+               <ChevronDown size={14} className={`text-white/20 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`}/>
             </div>
 
             {isMenuOpen && (
@@ -284,8 +284,8 @@ export default function AgentTrace() {
                     onClick={() => setFocusedAgentId(agent.id)}
                     className={`trace-pill-node ${isFocused ? 'active' : ''} ${isRunning ? 'running' : ''} ${isDone ? 'done' : ''}`}
                   >
-                    <div className="opacity-100">{isDone ? <CheckCircle2 size={14} className="text-green-400"/> : agent.icon}</div>
-                    <span className="text-white text-[10px] font-medium uppercase tracking-tight">{agent.id}</span>
+                    <div className="opacity-100">{isDone ? <CheckCircle2 size={14}/> : agent.icon}</div>
+                    <span className="text-gray-200 text-[10px] font-semibold uppercase tracking-tight">{agent.id}</span>
                   </div>
                 );
               })}
@@ -311,7 +311,7 @@ export default function AgentTrace() {
                         </div>
                       )}
                    </div>
-                   <div className="agent-box-output monospace-scroll custom-scrollbar overflow-y-auto h-full min-h-[120px]">
+                   <div className="agent-box-output monospace-scroll custom-scrollbar">
                       {agentLogs[agent.id] ? (
                         agentLogs[agent.id].map((log, i) => (
                           <div key={i} className="flex gap-2 text-[9px] leading-tight mb-1">

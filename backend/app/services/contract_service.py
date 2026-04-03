@@ -6,30 +6,29 @@ from datetime import datetime
 
 class ContractService:
 
-    async def upload_contracts_json(self, contracts_data: list[dict], db: Session):
+    async def upload_contracts_csv(self, csv_content: str, db: Session):
+        f = io.StringIO(csv_content)
+        reader = csv.DictReader(f)
+        
         contracts_to_add = []
-        for row in contracts_data:
-            # Basic Mapping & Defaults (Ensuring required columns for Neon)
-            contract_id = row.get("contract_id")
-            if not contract_id: continue # Skip if no ID
-            
+        for row in reader:
             contract = {
-                "contract_id":    contract_id,
-                "content_id":     row.get("content_id", "CID-UNKNOWN"),
+                "contract_id":    row.get("contract_id"),
+                "content_id":     row.get("content_id"),
                 "studio":         row.get("studio", "Unknown"),
                 "royalty_rate":   float(row.get("royalty_rate", 0)),
                 "rate_per_play":  float(row.get("rate_per_play", 0)),
                 "tier_rate":      float(row.get("tier_rate", 0)),
                 "tier_threshold": int(row.get("tier_threshold", 0)),
-                "territory":      row.get("territory", "Global"),
-                "start_date":     row.get("start_date", datetime.utcnow().strftime("%Y-%m-%d")),
-                "end_date":       row.get("end_date", "2099-12-31"),
+                "territory":      row.get("territory", "Unknown"),
+                "start_date":     row.get("start_date"),
+                "end_date":       row.get("end_date"),
                 "is_deleted":     0
             }
             contracts_to_add.append(contract)
 
         if contracts_to_add:
-            # Batch insertion to database
+            # Use bulk_insert_mappings for SQLite speed
             db.bulk_insert_mappings(Contract, contracts_to_add)
             db.commit()
 
