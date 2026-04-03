@@ -29,6 +29,10 @@ app.include_router(violations.router)
 app.include_router(pdf_contract.router)
 app.include_router(exports.router)
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "LRAC API", "version": "1.0.0"}
+
 @app.get("/")
 def root():
     return {"message": "Digital Licensing & Royalty Auditor API", "status": "running"}

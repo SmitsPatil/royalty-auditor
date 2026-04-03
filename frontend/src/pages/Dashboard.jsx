@@ -103,7 +103,9 @@ export default function Dashboard() {
         setAudits(Array.isArray(auditData) ? auditData : []);
       } catch (e) {
         console.error("Dashboard data fetch error:", e);
-        setError('Cannot reach LRAC API. Is the backend running?');
+        const status = e.response?.status;
+        const msg = e.response?.data?.detail || e.message;
+        setError(`LRAC API Error [${status || 'NETWORK'}]: ${msg}`);
       } finally {
         setLoading(false);
       }
