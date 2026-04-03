@@ -41,7 +41,7 @@ async def upload_contracts_batch(payload: ContractCreateBatch, db: Session = Dep
 
 @router.get("")
 async def get_contracts(q: str = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Return contracts stored in Neon/PostgreSQL with pagination and search."""
+    """Return contracts stored in SQLite with pagination and search."""
     try:
         query = db.query(Contract).filter(Contract.is_deleted == 0)
         if q:

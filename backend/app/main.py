@@ -45,6 +45,6 @@ def test_db(db: Session = Depends(get_db)):
         # Try to count contracts as a simple connectivity test
         from app.models.schema import Contract
         count = db.query(Contract).count()
-        return {"status": "Neon/PostgreSQL connected via SQLAlchemy working ✅", "contracts_count": count}
+        return {"status": "SQLite/SQLAlchemy working ✅", "contracts_count": count}
     except Exception as e:
         return {"error": str(e)}
