@@ -328,7 +328,7 @@ export default function Dashboard() {
               <div className="hero-kpi-card">
                 <span className="hero-kpi-label">Avg Rev Impact</span>
                 <div className="hero-kpi-value-wrap">
-                  <span className="hero-kpi-value text-hero-red" style={{ fontSize: '1.1rem' }}>
+                  <span className="hero-kpi-value text-hero-red">
                     ₹{((summary.total_leakage || 0) / (summary.total_count || 1)).toFixed(1)}
                   </span>
                   <div className="kpi-icon-wrap"><Activity size={14} className="text-red-400" /></div>
