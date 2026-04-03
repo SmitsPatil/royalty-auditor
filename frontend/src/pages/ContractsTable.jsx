@@ -47,61 +47,59 @@ const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, s
   );
 };
 
-/* ─── Floating Contextual Flyout (Appears near the button) ─────────── */
-const FloatingPanel = ({ isOpen, onClose, title, children, footer }) => {
-  if (!isOpen) return null;
+/* ─── ImportDrawer Component (Root Level, Full Height) ─────────────── */
+const ImportDrawer = ({ isOpen, onClose, title, children, footer }) => {
   return (
     <>
-      <div className="fixed inset-0 z-[100] bg-transparent" onClick={onClose} />
-      
+      {/* Overlay: Fixed to entire screen */}
       <div 
-          className="fixed z-[101] flex flex-col bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[24px]" 
+        className={`fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
+        style={{ zIndex: 9998 }}
+        onClick={onClose}
+      />
+      
+      {/* Drawer: Slides from right */}
+      <div 
+          className="fixed top-0 right-0 h-screen bg-[#0f172a] shadow-[-10px_0_30px_rgba(0,0,0,0.5)] transition-transform duration-300 ease-out flex flex-col" 
           style={{ 
-              width: '420px', 
-              top: '80px',
-              right: '24px',
-              maxHeight: 'calc(100vh - 120px)',
-              border: '1px solid #f1f5f9',
-              animation: 'panelPopOut 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards'
+              width: '380px', 
+              zIndex: 9999,
+              transform: isOpen ? 'translateX(0)' : 'translateX(100%)'
           }}
       >
-          <div className="flex h-full">
-            {/* Left Brand Strip */}
-            <div className="w-[120px] bg-slate-50 rounded-l-[24px] p-6 border-r border-slate-100 flex flex-col justify-end">
-                <h3 className="text-lg font-black text-slate-800 leading-[1.1]">Import Workspace</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Secure Ingestion Pipeline</p>
-            </div>
-
-            {/* Right Logic Area */}
-            <div className="flex-1 flex flex-col min-w-0">
-                <div className="p-6 flex-1 overflow-y-auto custom-scrollbar-minimal">
-                    {children}
-                </div>
-
-                {footer && (
-                    <div className="p-4 bg-slate-50 rounded-br-[24px] flex gap-2 border-t border-slate-100">
-                        {footer}
-                    </div>
-                )}
-            </div>
+          {/* Drawer Header */}
+          <div className="p-6 border-b border-white/5 flex items-center justify-between">
+              <div>
+                  <h2 className="text-lg font-bold text-white">{title}</h2>
+                  <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-1">Ingestion Workspace</p>
+              </div>
+              <button 
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-colors"
+                  onClick={onClose}
+              >
+                  <X size={18} />
+              </button>
+          </div>
+          
+          {/* Drawer Content */}
+          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar-dark">
+              {children}
           </div>
 
-          <button 
-            className="absolute -left-3 top-6 w-7 h-7 bg-white shadow-md rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 transition-all border border-slate-100"
-            onClick={onClose}
-          >
-            <X size={14} />
-          </button>
+          {/* Drawer Footer */}
+          {footer && (
+              <div className="p-6 border-t border-white/5 bg-[#0f172a] shadow-[0_-10px_20px_rgba(0,0,0,0.2)]">
+                  {footer}
+              </div>
+          )}
       </div>
 
       <style>{`
-          @keyframes panelPopOut {
-              from { opacity: 0; transform: translateX(30px) scale(0.95); }
-              to { opacity: 1; transform: translateX(0) scale(1); }
-          }
-          .custom-scrollbar-minimal::-webkit-scrollbar { width: 4px; }
-          .custom-scrollbar-minimal::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-          .custom-scrollbar-minimal::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar-dark::-webkit-scrollbar { width: 4px; }
+          .custom-scrollbar-dark::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+          .custom-scrollbar-dark::-webkit-scrollbar-track { background: transparent; }
+          .animate-in { animation: fadeIn 0.4s ease-out forwards; }
+          @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
     </>
   );
@@ -405,31 +403,38 @@ export default function ContractsTable() {
         </div>
       )}
 
-      <FloatingPanel
+      <ImportDrawer
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
-        title="Inbound Verify"
+        title={uploadStep === 'preview' ? "Verify Batch" : "Import Workspace"}
         footer={
             uploadStep === 'preview' ? (
-                <>
-                    <button className="btn flex-1 bg-slate-100 text-slate-500 hover:bg-slate-200 font-bold py-2 text-[10px]" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>RESET</button>
-                    <button className="btn btn-blue flex-1 font-bold py-2 text-[10px]" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
-                        {isUploading ? 'INGESTING...' : 'COMMIT INGESTION'}
+                <div className="flex gap-3">
+                    <button className="btn flex-1 bg-white/5 text-slate-400 hover:bg-white/10 font-bold py-2.5 text-[10px] uppercase" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>Reset</button>
+                    <button className="btn btn-blue flex-1 font-bold py-2.5 text-[10px] uppercase" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
+                        {isUploading ? 'Ingesting...' : 'Confirm & Commit'}
                     </button>
-                </>
-            ) : null
+                </div>
+            ) : (
+                <button className="btn w-full bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10 font-bold py-2.5 rounded-lg text-[10px] uppercase flex items-center justify-center gap-2" onClick={handleDownloadSample}>
+                    <FileDown size={14} />
+                    Download Schema Template
+                </button>
+            )
         }
       >
-        <div className="space-y-6">
-            {/* 01. Source Gateway */}
+        <div className="space-y-8">
+            {/* 01. Source Gateway (Upload) */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in">
-                    <h4 className="text-[13px] font-black text-slate-900 mb-1">01. Source Gateway</h4>
-                    <div className="border border-dashed border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition-all cursor-pointer group"
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">01. Source Gateway</h4>
+                    <div className="border-2 border-dashed border-slate-800 rounded-2xl p-8 text-center hover:border-blue-500 hover:bg-blue-900/10 transition-all cursor-pointer group"
                          onClick={() => document.getElementById('drawer-input-final').click()}>
-                        <Upload size={18} className="mx-auto mb-2 text-slate-400 group-hover:text-blue-500" />
-                        <p className="text-[11px] font-bold text-slate-800">Drop files to ingest</p>
-                        <p className="text-[9px] text-slate-400">Support: CSV / Text-PDF</p>
+                        <div className="w-14 h-14 bg-slate-900 text-slate-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-900/50 group-hover:text-blue-400 transition-all shadow-xl">
+                            <Upload size={24} />
+                        </div>
+                        <p className="text-[11px] font-bold text-white group-hover:text-blue-200 transition-colors">Drop files to ingest</p>
+                        <p className="text-[9px] text-slate-500 mt-1 uppercase tracking-tighter">Support: UTF-8 CSV / Text-PDF</p>
                     </div>
                 </div>
             )}
@@ -437,41 +442,31 @@ export default function ContractsTable() {
             {/* Local Disk Section */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in" style={{ animationDelay: '0.1s' }}>
-                    <h4 className="text-[11px] font-black text-slate-900 mb-2">Local Disk</h4>
-                    <input type="file" id="drawer-input-final" accept=".csv,.pdf" className="text-[10px] w-full file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-all" onChange={handleFileSelect} />
-                    <button className="w-full mt-3 bg-slate-50 text-slate-800 border border-slate-200 py-2 rounded-lg text-[10px] font-bold hover:bg-slate-100 transition-all" onClick={() => document.getElementById('drawer-input-final').click()}>
-                        Browse
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">02. Local Disk</h4>
+                    <input type="file" id="drawer-input-final" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} />
+                    <button className="w-full bg-slate-900 text-slate-300 border border-slate-800 py-3 rounded-xl text-[11px] font-bold hover:bg-slate-800 hover:text-white transition-all shadow-lg" onClick={() => document.getElementById('drawer-input-final').click()}>
+                        Open File Explorer
                     </button>
                 </div>
             )}
 
-            {/* Resources Section */}
+            {/* 03. Format Guide */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in" style={{ animationDelay: '0.2s' }}>
-                    <h4 className="text-[11px] font-black text-slate-900 mb-2">Resources</h4>
-                    <button className="w-full bg-slate-50 text-slate-800 border border-slate-200 py-2 rounded-lg text-[10px] font-bold hover:bg-slate-100 transition-all" onClick={handleDownloadSample}>
-                        Template
-                    </button>
-                </div>
-            )}
-
-            {/* 03. Ingestion Schema */}
-            {uploadStep !== 'preview' && (
-                <div className="animate-in" style={{ animationDelay: '0.3s' }}>
-                    <h4 className="text-[13px] font-black text-slate-900 mb-2">03. Ingestion Schema</h4>
-                    <div className="bg-slate-50/50 rounded-xl p-3 border border-slate-100">
-                        <div className="space-y-1">
-                            <div className="flex justify-between items-center">
-                                <code className="text-slate-800 text-[11px] font-bold font-mono">contract_id*</code>
-                                <span className="text-slate-400 text-[10px]">Primary PKey</span>
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">03. Format Guide</h4>
+                    <div className="bg-black/40 rounded-2xl p-5 border border-slate-800/60 shadow-inner">
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-800/40">
+                                <code className="text-blue-400 text-[10px] font-bold">contract_id*</code>
+                                <span className="text-slate-600 text-[8px] font-mono tracking-tighter uppercase">Unique PKey</span>
+                            </div>
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-800/40">
+                                <code className="text-blue-400 text-[10px] font-bold">content_id*</code>
+                                <span className="text-slate-600 text-[8px] font-mono tracking-tighter uppercase">Asset Mapping</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <code className="text-slate-800 text-[11px] font-bold font-mono">content_id*</code>
-                                <span className="text-slate-400 text-[10px]">Asset Mapping</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <code className="text-slate-400 text-[11px] font-mono">studio</code>
-                                <span className="text-slate-400 text-[10px]">Optional Label</span>
+                                <code className="text-slate-400 text-[10px]">studio</code>
+                                <span className="text-slate-600 text-[8px] font-mono tracking-tighter uppercase">Optional Metadata</span>
                             </div>
                         </div>
                     </div>
@@ -482,32 +477,37 @@ export default function ContractsTable() {
             {uploadStep === 'preview' && (
                 <div className="animate-in">
                     {errors.length > 0 && (
-                        <div className="bg-red-50 p-3 rounded-lg border border-red-100 mb-4">
-                            <div className="flex items-center gap-2 text-red-600 text-[10px] font-bold mb-1">
+                        <div className="bg-red-950/40 p-4 rounded-xl border border-red-900/50 mb-6 shadow-xl">
+                            <div className="flex items-center gap-2 text-red-500 text-[11px] font-bold mb-3 uppercase tracking-wider">
                                 <AlertCircle size={14} />
-                                <span>Validation Issues</span>
+                                <span>Validation Failures</span>
                             </div>
-                            <ul className="text-[9px] text-red-500 list-disc pl-4 space-y-1">
-                                {errors.slice(0, 3).map((e, i) => <li key={i}>{e}</li>)}
+                            <ul className="text-[10px] text-red-400 list-disc pl-5 space-y-2 font-medium">
+                                {errors.slice(0, 5).map((e, i) => <li key={i}>{e}</li>)}
                             </ul>
                         </div>
                     )}
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase mb-3">Ingestion Preview</h4>
-                    <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar-minimal">
+                    
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+                        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">D. Record Preview</h4>
+                        <span className="text-[9px] font-bold text-blue-400 bg-blue-900/40 px-2 py-0.5 rounded-md border border-blue-800/50">{previewData.length} Found</span>
+                    </div>
+
+                    <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar-dark">
                         {previewData.map((p, i) => (
-                            <div key={i} className={`p-2 rounded border flex items-center justify-between ${!p.contract_id ? 'border-red-100 bg-red-50' : 'border-slate-100 bg-slate-50'}`}>
+                            <div key={i} className={`p-4 rounded-xl border flex items-center justify-between transition-all group ${!p.contract_id ? 'border-red-900/50 bg-red-950/20' : 'border-slate-800/50 bg-black/30 hover:border-blue-900/50 hover:bg-blue-950/20'}`}>
                                 <div className="min-w-0">
-                                    <div className="text-[10px] font-bold text-slate-800 truncate">{p.contract_id || 'UID_NULL'}</div>
-                                    <div className="text-[8px] text-slate-400 truncate">{p.studio}</div>
+                                    <div className={`text-[11px] font-bold truncate ${!p.contract_id ? 'text-red-400' : 'text-slate-200'}`}>{p.contract_id || 'NULL_ID'}</div>
+                                    <div className="text-[9px] text-slate-500 truncate tracking-tight">{p.studio} • {p.content_id}</div>
                                 </div>
-                                <span className="text-[8px] font-bold text-slate-400">{p.territory}</span>
+                                <span className="text-[9px] font-bold text-slate-500 px-2.5 py-1 bg-slate-900 rounded border border-slate-800 flex-shrink-0 ml-2 group-hover:border-blue-800 group-hover:text-blue-400 transition-colors uppercase">{p.territory}</span>
                             </div>
                         ))}
                     </div>
                 </div>
             )}
         </div>
-      </FloatingPanel>
+      </ImportDrawer>
 
       {/* ─── Delete Confirmation Modal ─── */}
       <DeleteModal 
