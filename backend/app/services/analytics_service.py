@@ -19,12 +19,18 @@ class AnalyticsService:
         # Total Population from Contract table
         total_contracts = db.query(Contract).count()
 
-        # Audited Stats from AuditResult table - JOINED with active contracts to ensure parity
+        # Audited Stats: Use a subquery to pick only the LATEST result per contact to avoid counting duplicates
+        latest_ids_sub = db.query(
+            AuditResult.contract_id,
+            func.max(AuditResult.id).label("latest_id")
+        ).group_by(AuditResult.contract_id).subquery()
+
         status_stats = db.query(
             AuditResult.status,
             func.count(AuditResult.id).label("count"),
             func.sum(func.abs(AuditResult.difference)).label("sum_diff")
-        ).join(Contract, AuditResult.contract_id == Contract.contract_id)\
+        ).join(latest_ids_sub, AuditResult.id == latest_ids_sub.c.latest_id)\
+         .join(Contract, AuditResult.contract_id == Contract.contract_id)\
          .filter(Contract.is_deleted == 0)\
          .group_by(AuditResult.status).all()
 

@@ -99,8 +99,10 @@ export default function Dashboard() {
           api.get(`/audit/results?limit=100${categoryFilter ? `&category=${categoryFilter}` : ''}`)
         ]);
         setSummary(s.data);
-        const auditData = a.data.data || a.data || [];
-        setAudits(Array.isArray(auditData) ? auditData : []);
+        
+        // Robust check for nested audit results (API returns { data: [...] } or simple [...])
+        const rawAuditData = a.data?.data || a.data || [];
+        setAudits(Array.isArray(rawAuditData) ? rawAuditData : []);
       } catch (e) {
         console.error("Dashboard data fetch error:", e);
         const status = e.response?.status;
@@ -517,7 +519,7 @@ export default function Dashboard() {
         </div>
         <div className="mt-8 mb-4 pt-4 border-t border-white/5 flex justify-between items-center opacity-40 text-[10px] uppercase tracking-widest px-2">
           <span>&copy; 2026 LRAC Enterprise Intelligence</span>
-          <span>Build: 1.0.4 - Neon Relational Sync Active</span>
+          <span>Build: 1.0.5 - Holistic Neon Synchronization Active</span>
         </div>
       </div>
     </div>
