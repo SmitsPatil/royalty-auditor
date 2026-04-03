@@ -240,11 +240,11 @@ export default function AgentTrace() {
              </button>
           </div>
 
-          <div className="ml-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-[#AAB4C5] opacity-20">
+          <div className="ml-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-gray-200">
              <span>Config</span>
-             <Info size={10} className="rotate-180"/>
+             <Info size={10} className="rotate-180 opacity-40"/>
              <span>Exec</span>
-             <Info size={10} className="rotate-180"/>
+             <Info size={10} className="rotate-180 opacity-40"/>
              <span>Inspect</span>
           </div>
         </div>
@@ -284,8 +284,8 @@ export default function AgentTrace() {
                     onClick={() => setFocusedAgentId(agent.id)}
                     className={`trace-pill-node ${isFocused ? 'active' : ''} ${isRunning ? 'running' : ''} ${isDone ? 'done' : ''}`}
                   >
-                    <div className="opacity-60">{isDone ? <CheckCircle2 size={14}/> : agent.icon}</div>
-                    <span className="text-[10px] font-black uppercase tracking-tight">{agent.id}</span>
+                    <div className="opacity-100">{isDone ? <CheckCircle2 size={14}/> : agent.icon}</div>
+                    <span className="text-gray-200 text-[10px] font-semibold uppercase tracking-tight">{agent.id}</span>
                   </div>
                 );
               })}
@@ -302,10 +302,10 @@ export default function AgentTrace() {
                    <div className="agent-box-header">
                       <div className="flex items-center gap-2">
                         {agent.icon}
-                        <span className="text-[9px] font-black uppercase text-white tracking-widest">{agent.id}</span>
+                        <span className="text-white text-sm font-medium tracking-wide">{agent.id}</span>
                       </div>
                       {agentStatus[agent.id] === 'running' && (
-                        <div className="sig-running flex items-center gap-1">
+                        <div className="sig-running flex items-center gap-1 text-blue-400">
                            <Activity size={8} className="animate-pulse"/>
                            <span className="text-[8px] font-bold">SIGNAL...</span>
                         </div>
@@ -340,10 +340,10 @@ export default function AgentTrace() {
             <div className="trace-console-header">
                <div className="flex items-center gap-2 mr-4">
                   <Terminal size={12} className="text-blue-500/50"/>
-                  <span className="text-[8px] font-black text-[#AAB4C5] uppercase tracking-[0.2em]">Live Stream</span>
+                  <span className="text-[8px] font-black text-gray-200 uppercase tracking-[0.2em]">Live Stream</span>
                </div>
-               <div className={`trace-tab ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>GLOBAL</div>
-               <div className={`trace-tab ${activeTab === 'trace' ? 'active' : ''}`} onClick={() => setActiveTab('trace')}>AGENT</div>
+               <div className={`trace-tab cursor-pointer pb-1 transition-all ${activeTab === 'audit' ? 'text-blue-400 border-b-2 border-blue-400 font-bold' : 'text-gray-400 hover:text-white'}`} onClick={() => setActiveTab('audit')}>GLOBAL</div>
+               <div className={`trace-tab cursor-pointer pb-1 transition-all ${activeTab === 'trace' ? 'text-blue-400 border-b-2 border-blue-400 font-bold' : 'text-gray-400 hover:text-white'}`} onClick={() => setActiveTab('trace')}>AGENT</div>
             </div>
             <div className="flex-1 py-3">
                {getLogsForTab().length === 0 ? (
