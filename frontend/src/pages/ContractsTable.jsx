@@ -47,39 +47,39 @@ const DeleteModal = ({ isOpen, onCancel, onConfirm, contractId, retentionDays, s
   );
 };
 
-/* ─── Drawer Component (No Overlay, Fixed Right) ──────────────────── */
+/* ─── Drawer Component (High z-index, Fixed Right) ──────────────────── */
 const RightDrawer = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
   return (
     <div 
-        className="fixed z-[1000] flex justify-end overflow-visible" 
+        className="fixed z-[2000] flex justify-end overflow-visible" 
         style={{ right: 0, top: 0, bottom: 0, pointerEvents: 'none' }}
     >
         <div 
-            className="h-full bg-white flex flex-col shadow-[-10px_0_30px_rgba(0,0,0,0.06)]" 
+            className="h-full bg-white flex flex-col shadow-[-15px_0_40px_rgba(0,0,0,0.12)]" 
             style={{ 
-                width: '400px', 
+                width: '380px', 
                 pointerEvents: 'auto',
                 borderLeft: '1px solid var(--border)',
-                animation: 'drawerSlideIn 0.4s cubic-bezier(0, 0, 0.2, 1) forwards'
+                animation: 'drawerSlideIn 0.35s cubic-bezier(0, 0, 0.2, 1) forwards'
             }}
         >
-            <div className="p-6 border-b bg-white flex items-center justify-between sticky top-0 z-10">
+            <div className="p-5 border-b bg-white flex items-center justify-between sticky top-0 z-10">
                 <div>
-                    <h2 className="text-lg font-bold text-slate-900 leading-tight">{title}</h2>
-                    <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1 font-semibold">Contract Import Hub</p>
+                    <h2 className="text-base font-bold text-slate-900 leading-tight">{title}</h2>
+                    <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5 font-bold">Secure Ingestion Pipeline</p>
                 </div>
                 <button className="icon-btn hover:bg-slate-100 transition-colors" onClick={onClose}>
-                    <X size={20} />
+                    <X size={18} />
                 </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 bg-white">
                 {children}
             </div>
 
             {footer && (
-                <div className="p-6 border-t bg-slate-50 flex gap-3 sticky bottom-0 z-10 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+                <div className="p-5 border-t bg-slate-50 flex gap-3 sticky bottom-0 z-10 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
                     {footer}
                 </div>
             )}
@@ -89,14 +89,10 @@ const RightDrawer = ({ isOpen, onClose, title, children, footer }) => {
                 from { transform: translateX(100%); }
                 to { transform: translateX(0); }
             }
-            .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+            .custom-scrollbar::-webkit-scrollbar { width: 4px; }
             .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
             .border-b { border-bottom: 1px solid var(--border); }
             .border-t { border-top: 1px solid var(--border); }
-            .sticky { position: sticky; }
-            .fixed { position: fixed; }
-            .space-y-6 > * + * { margin-top: 1.5rem; }
-            .space-y-3 > * + * { margin-top: 0.75rem; }
         `}</style>
     </div>
   );
@@ -408,88 +404,100 @@ export default function ContractsTable() {
         footer={
             uploadStep === 'preview' ? (
                 <>
-                    <button className="btn btn-ghost flex-1" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>Reset</button>
+                    <button className="btn btn-ghost flex-1" onClick={() => { setUploadStep('select'); setPreviewData([]); }}>Reset Workflow</button>
                     <button className="btn btn-blue flex-1" disabled={errors.length > 0 || isUploading} onClick={confirmUpload}>
-                        {isUploading ? 'Appending...' : 'Start Append'}
+                        {isUploading ? 'Appending...' : 'Confirm & Commit'}
                     </button>
                 </>
             ) : (
                 <button className="btn btn-ghost w-full" onClick={handleDownloadSample}>
                     <FileDown size={18} className="mr-2" />
-                    Download Sample.csv
+                    Schema Template (.csv)
                 </button>
             )
         }
       >
-        <div className="space-y-8 pb-10">
-            {/* Section 1: Format Guide (Always visible unless in preview) */}
+        <div className="space-y-8">
+            {/* Section A: Upload Area */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in">
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">1. Format Guide</h4>
-                    <div className="bg-slate-900 rounded-2xl p-5 shadow-lg border border-slate-800">
-                        <div className="space-y-3">
-                            <div className="flex justify-between items-center text-xs">
-                                <code className="text-blue-400">contract_id*</code>
-                                <span className="text-slate-500 text-[10px]">Primary Key</span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <code className="text-blue-400">content_id*</code>
-                                <span className="text-slate-500 text-[10px]">Asset Ref</span>
-                            </div>
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">A. Upload Workspace</h4>
+                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer group"
+                         onClick={() => document.getElementById('drawer-file-input').click()}>
+                        <div className="w-12 h-12 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-100 group-hover:text-blue-500 transition-all">
+                            <Upload size={20} />
                         </div>
+                        <p className="text-[11px] font-bold text-slate-700">Drop files here to start</p>
+                        <p className="text-[9px] text-slate-400 mt-1">Supports UTF-8 CSV or Text PDF</p>
                     </div>
                 </div>
             )}
 
-            {/* Section 2: Upload Zone */}
+            {/* Section B: Format Guide */}
             {uploadStep !== 'preview' && (
                 <div className="animate-in delay-1">
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">2. Upload Source</h4>
-                    <div className="border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer group"
-                         onClick={() => document.getElementById('drawer-upload').click()}>
-                        <input type="file" id="drawer-upload" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} />
-                        <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-100 group-hover:text-blue-500 transition-all">
-                            <Upload size={24} />
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">B. Governance Schema</h4>
+                    <div className="bg-slate-900 rounded-xl p-4 border border-slate-800">
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                                <code className="text-blue-400 text-[10px]">contract_id*</code>
+                                <span className="text-slate-500 text-[9px] font-mono">UID</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <code className="text-blue-400 text-[10px]">content_id*</code>
+                                <span className="text-slate-500 text-[9px] font-mono">Asset ID</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                                <code className="text-slate-400 text-[10px]">rate_per_play</code>
+                                <span className="text-slate-500 text-[9px] font-mono">Float</span>
+                            </div>
                         </div>
-                        <p className="text-xs font-bold text-slate-700">Select CSV or PDF</p>
-                        <p className="text-[10px] text-slate-400 mt-1">Files are parsed locally for privacy</p>
                     </div>
                 </div>
             )}
 
-            {/* Section 3: Preview (Only visible when data exists) */}
+            {/* Section C: Manual Selector */}
+            {uploadStep !== 'preview' && (
+                <div className="animate-in delay-2">
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">C. File Selector</h4>
+                    <input type="file" id="drawer-file-input" accept=".csv,.pdf" className="hidden" onChange={handleFileSelect} />
+                    <button className="btn btn-outline w-full py-2 text-xs" onClick={() => document.getElementById('drawer-file-input').click()}>
+                        Browse Local Files
+                    </button>
+                    <p className="text-[9px] text-slate-400 mt-2 text-center italic">All processing happens secure and locally.</p>
+                </div>
+            )}
+
+            {/* Section D: Preview Results */}
             {uploadStep === 'preview' && (
                 <div className="animate-in">
                     {errors.length > 0 && (
-                        <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-6 font-medium">
-                            <div className="flex items-center gap-2 text-red-600 text-xs mb-2">
-                                <AlertCircle size={16} />
-                                <span>Validation Conflict ({errors.length})</span>
+                        <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-5">
+                            <div className="flex items-center gap-2 text-red-600 text-[11px] font-bold mb-2">
+                                <AlertCircle size={14} />
+                                <span>Batch Validation Failures</span>
                             </div>
-                            <ul className="text-[10px] text-red-500 list-disc pl-5 space-y-1">
-                                {errors.slice(0, 3).map((e, i) => <li key={i}>{e}</li>)}
+                            <ul className="text-[9px] text-red-500 list-disc pl-5 space-y-1">
+                                {errors.slice(0, 4).map((e, i) => <li key={i}>{e}</li>)}
                             </ul>
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">3. Preview Ingestion</h4>
-                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{previewData.length} records</span>
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">D. Data Lineage Preview</h4>
+                        <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{previewData.length} records detected</span>
                     </div>
 
-                    <div className="space-y-2">
-                        {previewData.slice(0, 50).map((p, i) => (
-                            <div key={i} className={`p-3 rounded-xl border flex items-center justify-between transition-colors hover:bg-white ${!p.contract_id ? 'border-red-200 bg-red-50' : 'border-slate-100 bg-slate-50'}`}>
-                                <div>
-                                    <div className="text-[10px] font-bold text-slate-800">{p.contract_id || 'ERROR: NO ID'}</div>
-                                    <div className="text-[9px] text-slate-400">{p.studio} • {p.content_id}</div>
+                    <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+                        {previewData.map((p, i) => (
+                            <div key={i} className={`p-2.5 rounded-lg border flex items-center justify-between group transition-all hover:bg-white ${!p.contract_id ? 'border-red-200 bg-red-50' : 'border-slate-100 bg-slate-50'}`}>
+                                <div className="min-w-0">
+                                    <div className="text-[10px] font-bold text-slate-800 truncate">{p.contract_id || 'NULL_ID'}</div>
+                                    <div className="text-[8px] text-slate-400 truncate tracking-tight">{p.studio} • {p.content_id}</div>
                                 </div>
-                                <span className="text-[9px] font-bold text-slate-400 px-2 py-1 bg-white rounded-lg border border-slate-100">{p.territory}</span>
+                                <span className="text-[8px] font-bold text-slate-400 px-1.5 py-0.5 bg-white rounded border border-slate-100 flex-shrink-0 ml-2 group-hover:border-blue-200 group-hover:text-blue-500 transition-colors">{p.territory}</span>
                             </div>
                         ))}
-                        {previewData.length > 50 && (
-                            <p className="text-center text-[10px] text-slate-400 py-4">and {previewData.length - 50} more records...</p>
-                        )}
                     </div>
                 </div>
             )}
