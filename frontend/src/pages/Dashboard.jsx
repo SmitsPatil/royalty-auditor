@@ -95,8 +95,10 @@ export default function Dashboard() {
           api.get(`/audit/results${categoryFilter ? `?category=${categoryFilter}` : ''}`)
         ]);
         setSummary(s.data);
-        setAudits(a.data || []);
+        const auditData = a.data.data || a.data || [];
+        setAudits(Array.isArray(auditData) ? auditData : []);
       } catch (e) {
+        console.error("Dashboard data fetch error:", e);
         setError('Cannot reach LRAC API. Is the backend running?');
       } finally {
         setLoading(false);
@@ -264,10 +266,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="animate-in delay-1">
+    <div className="animate-in delay-1 flex flex-col flex-1 min-h-screen w-full max-w-none px-6 py-4">
       {/* ── Page Header ── */}
-      <div className="page-header flex items-center justify-between">
-        <div style={{ marginLeft: '40px' }}>
+      <div className="page-header flex items-center justify-between mb-6">
+        <div>
           <h1 className="page-title flex items-center gap-3">
             Audit Intelligence
             {categoryFilter && (

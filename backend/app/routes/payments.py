@@ -31,16 +31,20 @@ async def get_payments(q: str = None, skip: int = 0, limit: int = 100, db: Sessi
                     Payment.contract_id.ilike(f"%{q}%")
                 )
             )
+        total = query.count()
         rows = query.offset(skip).limit(limit).all()
-        return [
-            {
-                "payment_id":   r.payment_id,
-                "content_id":   r.content_id,
-                "contract_id":  r.contract_id,
-                "amount_paid":  r.amount_paid,
-                "payment_date": r.payment_date,
-            }
-            for r in rows
-        ]
+        return {
+            "total": total,
+            "data": [
+                {
+                    "payment_id":   r.payment_id,
+                    "content_id":   r.content_id,
+                    "contract_id":  r.contract_id,
+                    "amount_paid":  r.amount_paid,
+                    "payment_date": r.payment_date,
+                }
+                for r in rows
+            ]
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

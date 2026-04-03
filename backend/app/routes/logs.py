@@ -28,19 +28,23 @@ async def get_logs(q: str = None, skip: int = 0, limit: int = 200, db: Session =
                     Log.contract_id.ilike(f"%{q}%")
                 )
             )
+        total = query.count()
         rows = query.offset(skip).limit(limit).all()
-        return [
-            {
-                "play_id":    r.play_id,
-                "content_id": r.content_id,
-                "contract_id":r.contract_id,
-                "timestamp":  r.timestamp,
-                "country":    r.country,
-                "plays":      r.plays,
-                "user_type":  r.user_type,
-                "device":     r.device,
-            }
-            for r in rows
-        ]
+        return {
+            "total": total,
+            "data": [
+                {
+                    "play_id":    r.play_id,
+                    "content_id": r.content_id,
+                    "contract_id":r.contract_id,
+                    "timestamp":  r.timestamp,
+                    "country":    r.country,
+                    "plays":      r.plays,
+                    "user_type":  r.user_type,
+                    "device":     r.device,
+                }
+                for r in rows
+            ]
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
